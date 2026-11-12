@@ -109,26 +109,7 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
             Text("Treino estruturado concluído! Continue gravando ou finalize.", color = Green)
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Metric("Tempo", fmtTime(live.elapsedSec), modifier = Modifier.weight(1f))
-            Metric("Distância", fmtKm(live.distanceM), "km", Modifier.weight(1f))
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Metric("Velocidade", fmt1(live.speedKmh), "km/h", Modifier.weight(1f), big = true)
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Metric("Média", fmt1(live.avgSpeedKmh), "km/h", Modifier.weight(1f))
-            Metric("Máxima", fmt1(live.maxSpeedKmh), "km/h", Modifier.weight(1f))
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            val zone = live.power3s?.let { CogganZones.zoneFor(it, profile.ftp) }
-            if (plan == null) Metric("Potência 3s", fmtOpt(live.power3s), zone?.let { "W · Z$it" } ?: "W", Modifier.weight(1f))
-            Metric("Pot. média", live.avgPower.toString(), "W", Modifier.weight(1f))
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Metric("Batimento", fmtOpt(live.heartRate), "bpm", Modifier.weight(1f), color = Color(0xFFFF6B6B))
-            Metric("Cadência", fmtOpt(live.cadence), "rpm", Modifier.weight(1f))
-        }
+        Dashboard(app, live, profile)
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
             if (live.status == RecStatus.PAUSED) {

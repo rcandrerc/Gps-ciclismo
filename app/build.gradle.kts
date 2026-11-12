@@ -14,8 +14,11 @@ android {
         applicationId = "br.com.gpsciclismo"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        // No GitHub Actions o número da execução vira a versão; o app usa isso para saber se há atualização.
+        val run = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
+        versionCode = run
+        versionName = "0.1.$run"
+        buildConfigField("String", "UPDATE_BASE_URL", "\"https://github.com/rcandrerc/Gps-ciclismo/releases/download/ultima-versao\"")
     }
 
     // Chave fixa de desenvolvimento (não é segredo): assim cada APK novo do GitHub
@@ -45,6 +48,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

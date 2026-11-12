@@ -31,10 +31,15 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           cp app/build/outputs/apk/debug/app-debug.apk gps-ciclismo.apk
-          gh release delete ultima-versao --yes --cleanup-tag || true
-          gh release create ultima-versao gps-ciclismo.apk \
-            --title "Última versão" \
-            --notes "APK gerado automaticamente a partir de ${GITHUB_SHA::7}." \
-            --prerelease
+          NOTES=$(printf '%s' "$COMMIT_MSG" | head -n 1)
+          jq -n --argjson code "$GITHUB_RUN_NUMBER" --arg name "0.1.$GITHUB_RUN_NUMBER" --arg notes "$NOTES" \
+            '{versionCode: $code, versionName: $name, notes: $notes}' > version.json
+          gh release view ultima-versao >/dev/null 2>&1 || \
+            gh release create ultima-versao --title "Última versão" --notes "APK atualizado automaticamente." --prerelease
+          # APK primeiro; version.json por último, para o app só ver a versão nova quando o APK já estiver lá.
+          gh release upload ultima-versao gps-ciclismo.apk --clobber
+          gh release upload ultima-versao version.json --clobber
+          gh release edit ultima-versao --notes "Versão 0.1.$GITHUB_RUN_NUMBER: $NOTES"

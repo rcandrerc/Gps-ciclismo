@@ -34,6 +34,7 @@ class MainActivity : ComponentActivity() {
                         else window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                     }
                     val start = remember { if (app.recorder.live.value.status == RecStatus.IDLE) "home" else "live" }
+                    UpdatePrompt(enabled = live.status == RecStatus.IDLE)
                     NavHost(nav, startDestination = start) {
                         composable("home") { HomeScreen(app, nav) }
                         composable("profile") { ProfileScreen(app) { nav.popBackStack() } }

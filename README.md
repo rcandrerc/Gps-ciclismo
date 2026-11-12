@@ -14,6 +14,8 @@ App Android (Kotlin + Jetpack Compose) para treinos de ciclismo por potência.
   - abaixa o volume da música enquanto fala.
 - **Gravação em segundo plano** (serviço em primeiro plano): funciona com a tela apagada.
 - **Histórico** com mapa do percurso (OpenStreetMap, sem chave de API) e resumo do treino.
+- **Tela de treino personalizável**: segure qualquer campo para editar (remover, adicionar, mudar de posição e de tamanho). O layout fica salvo.
+- **Atualização pelo app**: ao abrir, ele confere se há versão nova no GitHub e oferece baixar e instalar.
 - **Perfil** local: nome, peso, altura e FTP (mostra W/kg e as zonas).
 
 ## Como instalar

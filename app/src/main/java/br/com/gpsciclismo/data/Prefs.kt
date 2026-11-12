@@ -1,6 +1,7 @@
 package br.com.gpsciclismo.data
 
 import android.content.Context
+import br.com.gpsciclismo.core.DashboardLayout
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -80,5 +81,14 @@ class Prefs(context: Context) {
     fun removeSensor(kind: SensorKind) {
         sp.edit().remove("sensor_${kind.name}_addr").remove("sensor_${kind.name}_name").apply()
         _sensors.value = readSensors()
+    }
+
+    private val _dashboard = MutableStateFlow(DashboardLayout.decode(sp.getString("dashboard", null)))
+    /** Campos da tela de treino ao vivo (personalizável). */
+    val dashboard: StateFlow<DashboardLayout> = _dashboard.asStateFlow()
+
+    fun saveDashboard(layout: DashboardLayout) {
+        sp.edit().putString("dashboard", layout.encode()).apply()
+        _dashboard.value = layout
     }
 }
