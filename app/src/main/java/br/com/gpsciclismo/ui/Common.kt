@@ -2,6 +2,7 @@ package br.com.gpsciclismo.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -49,6 +50,7 @@ fun BackBar(title: String, onBack: () -> Unit, actions: @Composable () -> Unit =
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Voltar") }
         },
         actions = { actions() },
+        windowInsets = WindowInsets(0, 0, 0, 0), // as barras do sistema já são tratadas na raiz
     )
 }
 

@@ -89,16 +89,17 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
                 )
                 Text(
                     fmtOpt(live.power3s),
-                    fontSize = 72.sp, fontWeight = FontWeight.Bold, color = color,
+                    fontSize = 72.sp, fontWeight = FontWeight.Bold,
+                    color = if (coach.status == PowerCoach.Status.NO_TARGET) MaterialTheme.colorScheme.onSurface else color,
                 )
                 Text(
                     when (coach.status) {
                         PowerCoach.Status.IN_ZONE -> "na zona"
                         PowerCoach.Status.BELOW -> "abaixo: suba"
                         PowerCoach.Status.ABOVE -> "acima: baixe"
-                        else -> "watts (3 s)"
+                        else -> if (live.power3s == null) "sem sinal do medidor de potência" else "watts (3 s)"
                     },
-                    color = color,
+                    color = if (coach.status == PowerCoach.Status.NO_TARGET) MaterialTheme.colorScheme.onSurfaceVariant else color,
                 )
                 plan.blocks.getOrNull(coach.blockIndex + 1)?.let {
                     Text("Próximo: ${fmtTime(it.durationSec)} a ${it.target.label()}",

@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -25,7 +27,8 @@ class MainActivity : ComponentActivity() {
         val app = application as GpsCiclismoApp
         setContent {
             AppTheme {
-                Surface(Modifier.fillMaxSize()) {
+                // Android 15 desenha atrás das barras do sistema: afasta o conteúdo delas.
+                Surface(Modifier.fillMaxSize()) { Box(Modifier.fillMaxSize().safeDrawingPadding()) {
                     val nav = rememberNavController()
                     val live by app.recorder.live.collectAsStateWithLifecycle()
                     // Tela sempre acesa durante o treino (se o celular estiver no guidão).
@@ -51,6 +54,7 @@ class MainActivity : ComponentActivity() {
                             arguments = listOf(navArgument("id") { type = NavType.LongType }),
                         ) { RideDetailScreen(app, it.arguments?.getLong("id") ?: 0L) { nav.popBackStack() } }
                     }
+                }
                 }
             }
         }

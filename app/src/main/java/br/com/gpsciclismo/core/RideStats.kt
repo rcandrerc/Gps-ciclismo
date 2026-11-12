@@ -28,7 +28,7 @@ class RideStats {
 
     /** Chamar uma vez por segundo de treino ativo. */
     fun tickSecond(speedKmh: Double?, power: Int?, hr: Int?, cadence: Int?) {
-        if (speedKmh != null && speedKmh >= 2.0) movingSec++
+        if (speedKmh != null && speedKmh >= MOVING_KMH) movingSec++
         if (power != null) {
             powerSum += power; powerN++; workJ += power
             if (power > maxPower) maxPower = power
@@ -45,7 +45,9 @@ class RideStats {
         val pLat = lastLat; val pLon = lastLon
         if (pLat != null && pLon != null) {
             val d = haversineM(pLat, pLon, lat, lon)
-            if (d < 100) distanceM += d // ignora saltos do GPS
+            // Parado, o GPS "passeia" alguns metros; só soma distância em movimento
+            // (mesmo critério do tempo em movimento, senão a média fica inflada).
+            if (d < 100 && speedKmh >= MOVING_KMH) distanceM += d
         }
         lastLat = lat; lastLon = lon
         if (speedKmh in 0.0..120.0 && speedKmh > maxSpeedKmh) maxSpeedKmh = speedKmh
@@ -55,6 +57,8 @@ class RideStats {
     fun breakSegment() { lastLat = null; lastLon = null }
 
     companion object {
+        const val MOVING_KMH = 2.0
+
         fun haversineM(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
             val r = 6371000.0
             val dLat = Math.toRadians(lat2 - lat1)

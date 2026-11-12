@@ -33,3 +33,16 @@ class DashboardLayoutTest {
         assertEquals(5, rows.size)
     }
 }
+
+class RideStatsTest {
+    @Test fun gpsDriftWhileStoppedDoesNotInflateAverage() {
+        val s = br.com.gpsciclismo.core.RideStats()
+        // parado: GPS "passeia" ~10 m a cada leitura com velocidade baixa
+        repeat(30) { i ->
+            s.addLocation(-23.0 + (i % 2) * 0.0001, -46.0, 0.5)
+            s.tickSecond(0.5, null, null, null)
+        }
+        assertEquals(0.0, s.distanceM, 0.001)
+        assertEquals(0.0, s.avgSpeedKmh, 0.001)
+    }
+}

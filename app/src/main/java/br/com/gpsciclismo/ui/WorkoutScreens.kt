@@ -2,6 +2,7 @@ package br.com.gpsciclismo.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -66,6 +67,7 @@ fun WorkoutsScreen(app: GpsCiclismoApp, nav: NavController) {
     val workouts by flow.collectAsStateWithLifecycle(emptyList())
     val start = rememberStartRide(app, nav)
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = { BackBar("Treinos por zonas", { nav.popBackStack() }) },
         floatingActionButton = {
             ExtendedFloatingActionButton(onClick = { nav.navigate("workout/0") }) {
