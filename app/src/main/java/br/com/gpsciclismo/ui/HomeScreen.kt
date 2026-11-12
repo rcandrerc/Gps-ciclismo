@@ -44,6 +44,7 @@ fun ridePermissions(): Array<String> = buildList {
     add(Manifest.permission.ACCESS_FINE_LOCATION)
     add(Manifest.permission.ACCESS_COARSE_LOCATION)
     addAll(BleSensorManager.requiredPermissions())
+    add(Manifest.permission.RECORD_AUDIO)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(Manifest.permission.POST_NOTIFICATIONS)
 }.distinct().toTypedArray()
 

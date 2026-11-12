@@ -20,6 +20,9 @@ data class CoachSettings(
     /** Resumo falado a cada N minutos (0 = desligado). */
     val summaryEveryMin: Int = 5,
     val voiceEnabled: Boolean = true,
+    /** Nome da voz do Android escolhida (null = padrão). */
+    val voiceName: String? = null,
+    val speechRate: Float = 1.05f,
 )
 
 enum class SensorKind(val label: String) { HEART_RATE("Frequência cardíaca"), CADENCE("Cadência"), POWER("Potência") }
@@ -58,12 +61,15 @@ class Prefs(context: Context) {
         repeatEverySec = sp.getInt("repeatEverySec", 15),
         summaryEveryMin = sp.getInt("summaryEveryMin", 5),
         voiceEnabled = sp.getBoolean("voiceEnabled", true),
+        voiceName = sp.getString("voiceName", null),
+        speechRate = sp.getFloat("speechRate", 1.05f),
     )
 
     fun saveCoach(c: CoachSettings) {
         sp.edit().putInt("tolerancePct", c.tolerancePct).putInt("alertDelaySec", c.alertDelaySec)
             .putInt("repeatEverySec", c.repeatEverySec).putInt("summaryEveryMin", c.summaryEveryMin)
-            .putBoolean("voiceEnabled", c.voiceEnabled).apply()
+            .putBoolean("voiceEnabled", c.voiceEnabled)
+            .putString("voiceName", c.voiceName).putFloat("speechRate", c.speechRate).apply()
         _coach.value = c
     }
 

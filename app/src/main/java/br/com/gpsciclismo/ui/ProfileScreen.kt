@@ -16,7 +16,15 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Slider
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalContext
+import br.com.gpsciclismo.voice.VoiceAnnouncer
+import br.com.gpsciclismo.voice.VoiceOption
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -42,6 +50,13 @@ fun ProfileScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
     var repeat by remember { mutableStateOf(c.repeatEverySec.toString()) }
     var summary by remember { mutableStateOf(c.summaryEveryMin.toString()) }
     var voice by remember { mutableStateOf(c.voiceEnabled) }
+    var voiceName by remember { mutableStateOf(c.voiceName) }
+    var rate by remember { mutableFloatStateOf(c.speechRate) }
+    var voices by remember { mutableStateOf<List<VoiceOption>>(emptyList()) }
+    val context = LocalContext.current
+    val previewer = remember { VoiceAnnouncer(context.applicationContext, onReady = { voices = it.portugueseVoices() }) }
+    DisposableEffect(Unit) { onDispose { previewer.shutdown() } }
+    val sample = "Bloco 2 de 6. Tá abaixo, sobe pra 240 watts."
 
     val ftpInt = ftp.toIntOrNull() ?: 0
 
@@ -76,9 +91,28 @@ fun ProfileScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
 
             Text("Treinador por voz", style = MaterialTheme.typography.titleMedium)
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Avisos falados", Modifier.weight(1f))
+                Text("Avisos automáticos (blocos, fora da zona, resumo)", Modifier.weight(1f))
                 Switch(voice, { voice = it })
             }
+            Text("Voz", style = MaterialTheme.typography.titleSmall)
+            Text(
+                "Escolha a voz e toque em Ouvir. As de qualidade alta costumam soar mais naturais. " +
+                    "Para baixar mais vozes: Configurações do Android > Acessibilidade > Saída de conversão de texto em voz.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (voices.isEmpty()) Text("Carregando vozes…", style = MaterialTheme.typography.bodySmall)
+            (listOf<VoiceOption?>(null) + voices).forEach { v ->
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    RadioButton(selected = voiceName == v?.name, onClick = { voiceName = v?.name })
+                    Text(v?.label ?: "Padrão do celular", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                    TextButton(onClick = { voiceName = v?.name; previewer.preview(v?.name, rate, sample) }) { Text("Ouvir") }
+                }
+            }
+            Text("Velocidade da fala: ${fmt1(rate.toDouble())}x", style = MaterialTheme.typography.bodySmall)
+            Slider(value = rate, onValueChange = { rate = it }, valueRange = 0.7f..1.6f, steps = 8,
+                onValueChangeFinished = { previewer.preview(voiceName, rate, sample) })
+
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 NumField("Margem ± %", tolerance, Modifier.weight(1f)) { tolerance = it }
                 NumField("Avisar após (s)", delay, Modifier.weight(1f)) { delay = it }
@@ -108,6 +142,8 @@ fun ProfileScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
                         repeatEverySec = repeat.toIntOrNull()?.coerceIn(5, 300) ?: c.repeatEverySec,
                         summaryEveryMin = summary.toIntOrNull()?.coerceIn(0, 120) ?: c.summaryEveryMin,
                         voiceEnabled = voice,
+                        voiceName = voiceName,
+                        speechRate = rate,
                     ))
                     onBack()
                 },

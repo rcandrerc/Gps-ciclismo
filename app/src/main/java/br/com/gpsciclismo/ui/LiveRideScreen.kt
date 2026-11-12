@@ -11,7 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -113,6 +117,20 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
         Dashboard(app, live, profile)
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+            OutlinedButton(onClick = { app.recorder.speakSummary() }, modifier = Modifier.weight(1f).height(52.dp)) {
+                Icon(Icons.Filled.RecordVoiceOver, null); Text(" Resumo")
+            }
+            OutlinedButton(onClick = { app.recorder.askByVoice() }, modifier = Modifier.weight(1f).height(52.dp)) {
+                Icon(Icons.Filled.Mic, null); Text(" Perguntar")
+            }
+        }
+        Text(
+            "No fone: 1 toque = resumo, 2 toques = perguntar (velocidade, potência, quanto falta…).",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             if (live.status == RecStatus.PAUSED) {
                 Button(onClick = { app.recorder.resume() }, modifier = Modifier.weight(1f).height(56.dp)) { Text("Continuar") }
             } else {

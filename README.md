@@ -12,6 +12,8 @@ App Android (Kotlin + Jetpack Compose) para treinos de ciclismo por potência.
   - usa a média de 3 s da potência e, se você ficar fora da faixa por 5 s, fala "Tá abaixo, sobe pra 240 watts" ou "Tá muito acima, baixa pra 130 watts" (com bipe agudo/grave), repetindo a cada 15 s;
   - resumo periódico (distância, tempo, média, potência, batimento);
   - abaixa o volume da música enquanto fala.
+- **Perguntas por voz**: no fone, 1 toque = resumo completo (bloco, alvo, quanto falta, média do bloco, velocidade, FC, cadência, distância); 2 toques = fazer uma pergunta ("qual minha velocidade?", "quanto falta?", "me atualize"). Também há botões Resumo e Perguntar na tela.
+- **Escolha da voz**: no Perfil, lista as vozes em português do Android com amostra e velocidade da fala.
 - **Gravação em segundo plano** (serviço em primeiro plano): funciona com a tela apagada.
 - **Histórico** com mapa do percurso (OpenStreetMap, sem chave de API) e resumo do treino.
 - **Tela de treino personalizável**: segure qualquer campo para editar (remover, adicionar, mudar de posição e de tamanho). O layout fica salvo.

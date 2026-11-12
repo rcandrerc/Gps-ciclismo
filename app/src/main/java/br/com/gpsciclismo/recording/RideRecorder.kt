@@ -15,7 +15,9 @@ import br.com.gpsciclismo.data.AppDatabase
 import br.com.gpsciclismo.data.Prefs
 import br.com.gpsciclismo.data.RideEntity
 import br.com.gpsciclismo.data.RidePointEntity
+import br.com.gpsciclismo.core.VoiceQuery
 import br.com.gpsciclismo.voice.VoiceAnnouncer
+import br.com.gpsciclismo.voice.VoiceCommander
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -71,6 +73,12 @@ class RideRecorder(
     val live: StateFlow<LiveRide> = _live.asStateFlow()
 
     private var voice: VoiceAnnouncer? = null
+    private var commander: VoiceCommander? = null
+    /** Avisos automáticos (o que o ciclista pergunta é sempre respondido). */
+    private var autoVoice = true
+    private var blockIndex = -1
+    private var blockPowerSum = 0L
+    private var blockPowerN = 0
     private var stats = RideStats()
     private var coach: PowerCoach? = null
     private val power3s = RollingAverage(3000)
@@ -105,7 +113,13 @@ class RideRecorder(
         lastLocation = null
         startedAt = System.currentTimeMillis()
         val coachSettings = prefs.coach.value
-        voice = VoiceAnnouncer(context).also { it.enabled = coachSettings.voiceEnabled }
+        autoVoice = coachSettings.voiceEnabled
+        blockIndex = -1; blockPowerSum = 0; blockPowerN = 0
+        val v = VoiceAnnouncer(context, coachSettings.voiceName, coachSettings.speechRate)
+        voice = v
+        commander = runCatching {
+            VoiceCommander(context, v, onSummary = { speakSummary() }, onQuery = { answer(it) })
+        }.getOrNull()
         coach = plan?.let {
             PowerCoach(it, PowerCoach.Settings(
                 ftp = prefs.profile.value.ftp,
@@ -128,7 +142,7 @@ class RideRecorder(
             }
             _live.value = _live.value.copy(rideId = id)
         }
-        if (plan == null) voice?.speak("Treino iniciado.")
+        if (plan == null && autoVoice) voice?.speak("Treino iniciado. Um toque no botão do fone dá o resumo, dois toques para perguntar.")
         ticker = scope.launch {
             var next = System.currentTimeMillis()
             while (isActive) {
@@ -183,6 +197,8 @@ class RideRecorder(
                 ))
             }
         }
+        commander?.release()
+        commander = null
         voice?.speak("Treino salvo. ${summaryText()}")
         val v = voice
         scope.launch { delay(15_000); v?.shutdown() }
@@ -235,11 +251,15 @@ class RideRecorder(
                     p.startsWith("Tá abaixo") -> voice?.beep(high = true)
                     p.startsWith("Tá muito acima") -> voice?.beep(high = false)
                 }
-                voice?.speak(p)
+                if (autoVoice) voice?.speak(p)
             }
         }
+        coach?.state?.let { st ->
+            if (st.blockIndex != blockIndex) { blockIndex = st.blockIndex; blockPowerSum = 0; blockPowerN = 0 }
+            if (pw != null) { blockPowerSum += pw; blockPowerN++ }
+        }
         val summaryMin = prefs.coach.value.summaryEveryMin
-        if (summaryMin > 0 && elapsed % (summaryMin * 60) == 0) voice?.speak(summaryText(elapsed))
+        if (autoVoice && summaryMin > 0 && elapsed % (summaryMin * 60) == 0) voice?.speak(fullSummary())
 
         val loc = lastLocation?.takeIf { now - it.time < 4000 }
         if (cur.rideId != 0L) {
@@ -272,6 +292,59 @@ class RideRecorder(
     private suspend fun flush() {
         val copy = synchronized(buffer) { buffer.toList().also { buffer.clear() } }
         if (copy.isNotEmpty()) db.rides().insertPoints(copy)
+    }
+
+    /** Para o botão de microfone na tela. */
+    fun askByVoice() = commander?.listen()
+
+    fun speakSummary() { voice?.speak(fullSummary(), urgent = true) }
+
+    private val br = Locale("pt", "BR")
+    private fun km(m: Double) = String.format(br, "%.1f", m / 1000)
+    private fun kmh(v: Double) = String.format(br, "%.0f", v)
+
+    private fun blockText(): String? {
+        val st = coach?.state ?: return null
+        val plan = _live.value.workout ?: return null
+        if (st.status == PowerCoach.Status.FINISHED) return "Treino estruturado concluído."
+        val target = st.target ?: return null
+        val sb = StringBuilder("Bloco ${st.blockIndex + 1} de ${plan.blocks.size}, alvo ${target.spoken()}, faltam ${PowerCoach.formatDuration(st.blockRemainingSec)}")
+        if (blockPowerN > 0) sb.append(", média do bloco ${blockPowerSum / blockPowerN} watts")
+        plan.blocks.getOrNull(st.blockIndex + 1)?.let { sb.append(". Depois, ${PowerCoach.formatDuration(it.durationSec)} a ${it.target.spoken()}") }
+        return sb.append(".").toString()
+    }
+
+    /** "Me atualize": tudo de uma vez. */
+    private fun fullSummary(): String {
+        val l = _live.value
+        val parts = mutableListOf<String>()
+        blockText()?.let { parts += it }
+        l.power3s?.let { parts += "Potência $it watts, média ${stats.avgPower}." }
+        parts += "Velocidade ${kmh(l.speedKmh)}, média ${kmh(stats.avgSpeedKmh)} quilômetros por hora."
+        l.heartRate?.let { parts += "Batimento $it." }
+        l.cadence?.let { parts += "Cadência $it." }
+        parts += "${km(stats.distanceM)} quilômetros em ${l.elapsedSec / 60} minutos."
+        return parts.joinToString(" ")
+    }
+
+    private fun answer(q: VoiceQuery) {
+        val l = _live.value
+        val text = when (q) {
+            VoiceQuery.SUMMARY, VoiceQuery.UNKNOWN -> fullSummary()
+            VoiceQuery.BLOCK -> blockText() ?: "Você está no pedal livre, sem blocos. ${l.elapsedSec / 60} minutos de treino."
+            VoiceQuery.SPEED -> "Velocidade ${kmh(l.speedKmh)}, média ${kmh(stats.avgSpeedKmh)}, máxima ${kmh(stats.maxSpeedKmh)} quilômetros por hora."
+            VoiceQuery.POWER -> l.power3s?.let { p ->
+                val zone = br.com.gpsciclismo.core.CogganZones.zoneFor(p, prefs.profile.value.ftp)
+                "Potência $p watts, zona $zone. Média ${stats.avgPower} watts." +
+                    (if (blockPowerN > 0) " Média do bloco ${blockPowerSum / blockPowerN}." else "")
+            } ?: "Sem sinal do medidor de potência."
+            VoiceQuery.HEART_RATE -> l.heartRate?.let { "Batimento $it, média ${stats.avgHr}." } ?: "Sem sinal da cinta cardíaca."
+            VoiceQuery.CADENCE -> l.cadence?.let { "Cadência $it, média ${stats.avgCadence}." } ?: "Sem sinal de cadência."
+            VoiceQuery.DISTANCE -> "${km(stats.distanceM)} quilômetros."
+            VoiceQuery.TIME -> "${PowerCoach.formatDuration(l.elapsedSec)} de treino." +
+                (blockText()?.let { " $it" } ?: "")
+        }
+        voice?.speak(text, urgent = true)
     }
 
     private fun summaryText(elapsed: Int = _live.value.elapsedSec): String {

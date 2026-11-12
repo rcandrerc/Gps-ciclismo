@@ -51,6 +51,9 @@ class RideService : LifecycleService() {
             val btOk = Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
             if (btOk) type = type or ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+            ) type = type or ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE
         }
         ServiceCompat.startForeground(this, 1, notification, type)
     }
