@@ -7,6 +7,7 @@ import android.location.Location
 import android.os.Looper
 import androidx.core.content.ContextCompat
 import br.com.gpsciclismo.ble.BleSensorManager
+import br.com.gpsciclismo.core.CogganZones
 import br.com.gpsciclismo.core.PowerCoach
 import br.com.gpsciclismo.core.RideStats
 import br.com.gpsciclismo.core.RollingAverage
@@ -299,9 +300,9 @@ class RideRecorder(
 
     fun speakSummary() { voice?.speak(fullSummary(), urgent = true) }
 
-    private val br = Locale("pt", "BR")
-    private fun km(m: Double) = String.format(br, "%.1f", m / 1000)
-    private fun kmh(v: Double) = String.format(br, "%.0f", v)
+    private val ptBr = Locale("pt", "BR")
+    private fun km(m: Double) = String.format(ptBr, "%.1f", m / 1000)
+    private fun kmh(v: Double) = String.format(ptBr, "%.0f", v)
 
     private fun blockText(): String? {
         val st = coach?.state ?: return null
@@ -334,7 +335,7 @@ class RideRecorder(
             VoiceQuery.BLOCK -> blockText() ?: "Você está no pedal livre, sem blocos. ${l.elapsedSec / 60} minutos de treino."
             VoiceQuery.SPEED -> "Velocidade ${kmh(l.speedKmh)}, média ${kmh(stats.avgSpeedKmh)}, máxima ${kmh(stats.maxSpeedKmh)} quilômetros por hora."
             VoiceQuery.POWER -> l.power3s?.let { p ->
-                val zone = br.com.gpsciclismo.core.CogganZones.zoneFor(p, prefs.profile.value.ftp)
+                val zone = CogganZones.zoneFor(p, prefs.profile.value.ftp)
                 "Potência $p watts, zona $zone. Média ${stats.avgPower} watts." +
                     (if (blockPowerN > 0) " Média do bloco ${blockPowerSum / blockPowerN}." else "")
             } ?: "Sem sinal do medidor de potência."
