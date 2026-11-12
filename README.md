@@ -18,9 +18,9 @@ App Android (Kotlin + Jetpack Compose) para treinos de ciclismo por potência.
 
 ## Como instalar
 
-Cada push na `main` gera o APK no GitHub Actions:
-**Actions → Android APK → execução mais recente → Artifacts → `gps-ciclismo-apk`**.
-Baixe, descompacte e abra o `app-debug.apk` no celular (permita "instalar apps desconhecidos").
+Cada push na `main` gera o APK e publica na release **Última versão**. No celular, abra
+https://github.com/rcandrerc/gps-ciclismo/releases/tag/ultima-versao, baixe o `gps-ciclismo.apk`
+e abra (permita "instalar apps desconhecidos").
 
 O APK é assinado com uma chave fixa de desenvolvimento (`app/debug.keystore`, não é segredo), então versões novas instalam por cima sem perder os treinos.
 
