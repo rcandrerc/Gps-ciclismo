@@ -21,6 +21,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -54,6 +57,17 @@ fun SensorsScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
         }
     }
 
+    // Tipo de sensor que o ciclista tocou para escolher (filtra a busca).
+    var wanted by remember { mutableStateOf<SensorKind?>(null) }
+    fun search(kind: SensorKind?) {
+        wanted = kind
+        if (!ble.hasPermissions()) { permLauncher.launch(BleSensorManager.requiredPermissions()); return }
+        ble.stopScan()
+        ble.startScan()
+    }
+    val shown = found.filter { d -> wanted == null || wanted in d.kinds }
+    val trainerSaved = saved[SensorKind.TRAINER] != null
+
     val now = System.currentTimeMillis()
     Column(Modifier.fillMaxSize()) {
         BackBar("Sensores", onBack)
@@ -73,12 +87,15 @@ fun SensorsScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
                     SensorKind.POWER -> readings.powerNow(now)?.let { "$it W" }
                     SensorKind.TRAINER -> readings.trainerSpeedNow(now)?.let { "${fmt1(it)} km/h" }
                 }
-                Card {
+                // O rolo smart já manda potência e cadência, se não houver outro sensor para isso.
+                val fromTrainer = s == null && trainerSaved && (kind == SensorKind.POWER || kind == SensorKind.CADENCE)
+                Card(onClick = { search(kind) }) {
                     Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
                             Text(kind.label, style = MaterialTheme.typography.titleMedium)
                             Text(
-                                if (s == null) "Nenhum sensor escolhido"
+                                if (fromTrainer) "Vem do rolo smart"
+                                else if (s == null) "Toque para escolher"
                                 else "${s.name} · " + when (state) {
                                     LinkState.CONNECTED -> "conectado"
                                     LinkState.CONNECTING -> "conectando…"
@@ -91,6 +108,7 @@ fun SensorsScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
                         if (s != null) TextButton(onClick = {
                             app.prefs.removeSensor(kind); ble.refreshConnections()
                         }) { Text("Remover") }
+                        else TextButton(onClick = { search(kind) }) { Text("Escolher") }
                     }
                 }
             }
@@ -98,32 +116,43 @@ fun SensorsScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
                 Button(
                     onClick = {
                         if (!ble.hasPermissions()) permLauncher.launch(BleSensorManager.requiredPermissions())
-                        else if (scanning) ble.stopScan() else ble.startScan()
+                        else if (scanning) ble.stopScan() else search(null)
                     },
                     modifier = Modifier.fillMaxWidth(),
-                ) { Text(if (scanning) "Parar busca" else "Buscar sensores") }
+                ) {
+                    Text(
+                        if (scanning) "Parar busca" + (wanted?.let { " (${it.label})" } ?: "")
+                        else "Buscar todos os sensores"
+                    )
+                }
                 if (scanning) LinearProgressIndicator(Modifier.fillMaxWidth().padding(top = 4.dp))
                 Text(
-                    "Acorde os sensores antes de buscar: gire o pedivela e molhe/coloque a cinta cardíaca. " +
-                        "Se o medidor de potência também manda cadência, use ele para os dois.",
+                    "Pode escolher um sensor de cada tipo, todos ao mesmo tempo (ex.: rolo smart + cinta cardíaca). " +
+                        "Acorde os sensores antes de buscar: gire o pedivela e molhe e coloque a cinta no peito. " +
+                        "Sensor já conectado não aparece na busca.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 6.dp),
                 )
             }
-            items(found, key = { it.address }) { d ->
+            if (scanning && shown.isEmpty()) item {
+                Text("Procurando…", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            items(shown, key = { it.address }) { d ->
                 Card {
                     Column(Modifier.fillMaxWidth().padding(12.dp)) {
                         Text(d.name, style = MaterialTheme.typography.titleSmall)
                         Text("${d.address} · sinal ${d.rssi} dBm", style = MaterialTheme.typography.bodySmall)
                         Column {
-                            SensorKind.entries.filter { it in d.kinds }.forEach { k ->
+                            SensorKind.entries.filter { it in d.kinds && (wanted == null || it == wanted) }.forEach { k ->
+                                val inUse = saved[k]?.address == d.address
                                 AssistChip(
                                     onClick = {
                                         app.prefs.saveSensor(SavedSensor(k, d.address, d.name))
                                         ble.connectSaved(); ble.refreshConnections()
+                                        if (wanted == k) { wanted = null; ble.stopScan() }
                                     },
-                                    label = { Text("Usar p/ ${k.label}") },
+                                    label = { Text(if (inUse) "✓ ${k.label}" else "Usar p/ ${k.label}") },
                                 )
                             }
                         }
