@@ -10,6 +10,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.foundation.layout.PaddingValues
+import br.com.gpsciclismo.core.RollingAverage
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -52,6 +55,8 @@ fun ProfileScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
     var voice by remember { mutableStateOf(c.voiceEnabled) }
     var voiceName by remember { mutableStateOf(c.voiceName) }
     var rate by remember { mutableFloatStateOf(c.speechRate) }
+    var powerDisplay by remember { mutableStateOf(c.powerDisplaySec) }
+    var powerAlert by remember { mutableStateOf(c.powerAlertSec) }
     var voices by remember { mutableStateOf<List<VoiceOption>>(emptyList()) }
     val context = LocalContext.current
     val previewer = remember { VoiceAnnouncer(context.applicationContext, onReady = { voices = it.portugueseVoices() }) }
@@ -88,6 +93,22 @@ fun ProfileScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
                     }
                 }
             }
+
+            Text("Leitura da potência", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "A potência instantânea pula muito a cada pedalada. Como no Garmin e no Wahoo, o app mostra a média " +
+                    "dos últimos segundos. 3 s é o mais usado; 5 s ou 10 s ficam mais estáveis, mas demoram mais para reagir.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            SecondsChoice("Na tela", powerDisplay) { powerDisplay = it }
+            SecondsChoice("Nos avisos de zona", powerAlert) { powerAlert = it }
+            Text(
+                "Os avisos por voz usam a média própria deles: mais longa evita aviso falso numa pedalada mais forte. " +
+                    "A cor do número (verde na zona, cinza abaixo, vermelho acima) segue a média da tela. O treino é gravado segundo a segundo, sem média.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
             Text("Treinador por voz", style = MaterialTheme.typography.titleMedium)
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -144,11 +165,28 @@ fun ProfileScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
                         voiceEnabled = voice,
                         voiceName = voiceName,
                         speechRate = rate,
+                        powerDisplaySec = powerDisplay,
+                        powerAlertSec = powerAlert,
                     ))
                     onBack()
                 },
                 modifier = Modifier.fillMaxWidth(),
             ) { Text("Salvar") }
+        }
+    }
+}
+
+@Composable
+private fun SecondsChoice(label: String, selected: Int, onSelect: (Int) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(label, style = MaterialTheme.typography.titleSmall)
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            RollingAverage.OPTIONS.forEach { sec ->
+                val text = if (sec == 1) "Instant." else "$sec s"
+                val m = Modifier.weight(1f)
+                if (sec == selected) Button(onClick = { onSelect(sec) }, modifier = m, contentPadding = PaddingValues(4.dp)) { Text(text, maxLines = 1) }
+                else OutlinedButton(onClick = { onSelect(sec) }, modifier = m, contentPadding = PaddingValues(4.dp)) { Text(text, maxLines = 1) }
+            }
         }
     }
 }

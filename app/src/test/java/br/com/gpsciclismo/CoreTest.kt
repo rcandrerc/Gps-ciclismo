@@ -73,4 +73,23 @@ class CoreTest {
         assertNotNull(said.find { it.second.contains("Baixa pra 130") })
         assertTrue(said.last().second.contains("Treino concluído"))
     }
+
+    @Test fun rollingAverageUsesExactlyNSeconds() {
+        val avg = br.com.gpsciclismo.core.RollingAverage(3)
+        // amostras a cada segundo, com um pouco de atraso no relógio
+        listOf(0L to 100, 1003L to 200, 1998L to 300, 3004L to 400).forEach { (t, w) -> avg.add(t, w) }
+        assertEquals(300, avg.average(3004)) // só 200, 300, 400
+        val five = br.com.gpsciclismo.core.RollingAverage(5)
+        (0 until 10).forEach { five.add(it * 1000L, if (it % 2 == 0) 100 else 300) }
+        assertEquals(220, five.average(9000)) // 300,100,300,100,300 = 220
+        assertEquals(null, br.com.gpsciclismo.core.RollingAverage(3).average(0))
+        assertEquals(null, avg.average(10_000)) // sensor parou de mandar
+    }
+
+    @Test fun powerColorStatus() {
+        assertEquals(PowerCoach.Status.IN_ZONE, PowerCoach.compare(240, 228..252))
+        assertEquals(PowerCoach.Status.BELOW, PowerCoach.compare(200, 228..252))
+        assertEquals(PowerCoach.Status.ABOVE, PowerCoach.compare(260, 228..252))
+        assertEquals(PowerCoach.Status.NO_TARGET, PowerCoach.compare(260, null))
+    }
 }

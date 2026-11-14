@@ -22,12 +22,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import br.com.gpsciclismo.core.PowerCoach
 import java.util.Locale
 
 val Green = Color(0xFF2ECC71)
 val Amber = Color(0xFFF5B041)
 val Red = Color(0xFFE74C3C)
 val Blue = Color(0xFF5DADE2)
+val Gray = Color(0xFF9AA0A6)
+
+/** Cor da potência em relação ao alvo do bloco: verde na zona, cinza abaixo, vermelho acima. */
+fun powerStatusColor(status: PowerCoach.Status): Color = when (status) {
+    PowerCoach.Status.IN_ZONE -> Green
+    PowerCoach.Status.BELOW -> Gray
+    PowerCoach.Status.ABOVE -> Red
+    else -> Color.Unspecified
+}
 
 private val colors = darkColorScheme(
     primary = Color(0xFF34C3A0),
@@ -69,13 +79,13 @@ fun Metric(label: String, value: String, unit: String = "", modifier: Modifier =
     }
 }
 
-private val br = Locale("pt", "BR")
+private val ptBr = Locale("pt", "BR")
 
 fun fmtTime(sec: Int): String {
     val h = sec / 3600; val m = (sec % 3600) / 60; val s = sec % 60
-    return if (h > 0) String.format(br, "%d:%02d:%02d", h, m, s) else String.format(br, "%02d:%02d", m, s)
+    return if (h > 0) String.format(ptBr, "%d:%02d:%02d", h, m, s) else String.format(ptBr, "%02d:%02d", m, s)
 }
 
-fun fmt1(v: Double): String = String.format(br, "%.1f", v)
-fun fmtKm(m: Double): String = String.format(br, "%.2f", m / 1000)
+fun fmt1(v: Double): String = String.format(ptBr, "%.1f", v)
+fun fmtKm(m: Double): String = String.format(ptBr, "%.2f", m / 1000)
 fun fmtOpt(v: Int?): String = v?.toString() ?: "--"

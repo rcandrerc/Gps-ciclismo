@@ -76,10 +76,10 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
         val coach = live.coach
         val plan = live.workout
         if (plan != null && coach != null && coach.status != PowerCoach.Status.FINISHED && coach.target != null) {
-            val color = when (coach.status) {
-                PowerCoach.Status.IN_ZONE -> Green
-                PowerCoach.Status.BELOW -> Blue
-                PowerCoach.Status.ABOVE -> Red
+            // Cor decidida pela mesma média mostrada no número (verde na zona, cinza abaixo, vermelho acima).
+            val shown = PowerCoach.compare(live.powerAvg, coach.range)
+            val color = when (shown) {
+                PowerCoach.Status.IN_ZONE, PowerCoach.Status.BELOW, PowerCoach.Status.ABOVE -> powerStatusColor(shown)
                 else -> MaterialTheme.colorScheme.surfaceVariant
             }
             Column(
@@ -92,18 +92,18 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
-                    fmtOpt(live.power3s),
+                    fmtOpt(live.powerAvg),
                     fontSize = 72.sp, fontWeight = FontWeight.Bold,
-                    color = if (coach.status == PowerCoach.Status.NO_TARGET) MaterialTheme.colorScheme.onSurface else color,
+                    color = if (shown == PowerCoach.Status.NO_TARGET) MaterialTheme.colorScheme.onSurface else color,
                 )
                 Text(
-                    when (coach.status) {
+                    when (shown) {
                         PowerCoach.Status.IN_ZONE -> "na zona"
                         PowerCoach.Status.BELOW -> "abaixo: suba"
                         PowerCoach.Status.ABOVE -> "acima: baixe"
-                        else -> if (live.power3s == null) "sem sinal do medidor de potência" else "watts (3 s)"
+                        else -> if (live.powerAvg == null) "sem sinal do medidor de potência" else "watts (${live.powerWindowSec} s)"
                     },
-                    color = if (coach.status == PowerCoach.Status.NO_TARGET) MaterialTheme.colorScheme.onSurfaceVariant else color,
+                    color = if (shown == PowerCoach.Status.NO_TARGET) MaterialTheme.colorScheme.onSurfaceVariant else color,
                 )
                 plan.blocks.getOrNull(coach.blockIndex + 1)?.let {
                     Text("Próximo: ${fmtTime(it.durationSec)} a ${it.target.label()}",

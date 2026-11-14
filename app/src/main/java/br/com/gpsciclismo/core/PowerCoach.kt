@@ -96,13 +96,7 @@ class PowerCoach(
         }
 
         val range = block.target.range(settings.ftp, settings.tolerancePct)
-        val status = when {
-            range == null -> Status.NO_TARGET
-            power == null -> Status.NO_TARGET
-            power < range.first -> Status.BELOW
-            power > range.last -> Status.ABOVE
-            else -> Status.IN_ZONE
-        }
+        val status = compare(power, range)
         state = State(index, remaining, block.target, range, status)
 
         if (range != null && power != null && blockElapsed >= settings.graceSec && !(remaining <= settings.warnBeforeEndSec)) {
@@ -140,6 +134,14 @@ class PowerCoach(
     }
 
     companion object {
+        /** Compara a potência com a faixa do alvo (usado nos avisos e na cor da tela). */
+        fun compare(power: Int?, range: IntRange?): Status = when {
+            range == null || power == null -> Status.NO_TARGET
+            power < range.first -> Status.BELOW
+            power > range.last -> Status.ABOVE
+            else -> Status.IN_ZONE
+        }
+
         fun formatDuration(sec: Int): String {
             val m = sec / 60
             val s = sec % 60
@@ -152,8 +154,14 @@ class PowerCoach(
     }
 }
 
-/** Média móvel de potência nos últimos [windowMs] milissegundos. */
-class RollingAverage(private val windowMs: Long = 3000) {
+/**
+ * Média móvel de potência por tempo, como o "3s power" do Garmin/Wahoo.
+ * Recebe uma amostra por segundo e guarda as dos últimos [windowSec] segundos
+ * (com meio segundo de folga para o atraso do relógio, assim 3 s = 3 amostras).
+ * Zeros entram na conta (parar de pedalar baixa a média); falha do sensor não.
+ */
+class RollingAverage(windowSec: Int = 3) {
+    private val windowMs = windowSec.coerceAtLeast(1) * 1000L
     private val samples = ArrayDeque<Pair<Long, Int>>()
 
     fun add(timeMs: Long, value: Int) {
@@ -164,12 +172,17 @@ class RollingAverage(private val windowMs: Long = 3000) {
     fun average(nowMs: Long): Int? {
         trim(nowMs)
         if (samples.isEmpty()) return null
-        return samples.sumOf { it.second } / samples.size
+        return Math.round(samples.sumOf { it.second }.toDouble() / samples.size).toInt()
     }
 
     private fun trim(nowMs: Long) {
-        while (samples.isNotEmpty() && nowMs - samples.first().first > windowMs) samples.removeFirst()
+        while (samples.isNotEmpty() && nowMs - samples.first().first > windowMs - 500) samples.removeFirst()
     }
 
     fun clear() = samples.clear()
+
+    companion object {
+        /** Opções oferecidas nas configurações (1 = instantânea). */
+        val OPTIONS = listOf(1, 3, 5, 10)
+    }
 }

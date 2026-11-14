@@ -45,33 +45,44 @@ import br.com.gpsciclismo.GpsCiclismoApp
 import br.com.gpsciclismo.core.CogganZones
 import br.com.gpsciclismo.core.DashboardLayout
 import br.com.gpsciclismo.core.LiveField
+import br.com.gpsciclismo.core.PowerCoach
 import br.com.gpsciclismo.core.Tile
 import br.com.gpsciclismo.core.TileSize
 import br.com.gpsciclismo.data.Profile
 import br.com.gpsciclismo.recording.LiveRide
 
-private data class FieldValue(val value: String, val unit: String, val color: Color = Color.Unspecified)
+private data class FieldValue(val value: String, val unit: String, val color: Color = Color.Unspecified, val label: String? = null)
 
-private fun valueOf(f: LiveField, live: LiveRide, profile: Profile): FieldValue = when (f) {
+private fun valueOf(f: LiveField, live: LiveRide, profile: Profile): FieldValue {
+    // Cor da potência pelo alvo do bloco atual (só em treino com alvo), usando a média suavizada.
+    val pColor = powerStatusColor(PowerCoach.compare(live.powerAvg, live.coach?.range))
+    val win = "${live.powerWindowSec}s"
+    return when (f) {
     LiveField.SPEED -> FieldValue(fmt1(live.speedKmh), "km/h")
     LiveField.AVG_SPEED -> FieldValue(fmt1(live.avgSpeedKmh), "km/h")
     LiveField.MAX_SPEED -> FieldValue(fmt1(live.maxSpeedKmh), "km/h")
     LiveField.DISTANCE -> FieldValue(fmtKm(live.distanceM), "km")
     LiveField.TIME -> FieldValue(fmtTime(live.elapsedSec), "")
-    LiveField.POWER_3S -> FieldValue(fmtOpt(live.power3s), live.power3s?.let { "W · Z${CogganZones.zoneFor(it, profile.ftp)}" } ?: "W")
+    LiveField.POWER_3S -> FieldValue(
+        fmtOpt(live.powerAvg), live.powerAvg?.let { "W · Z${CogganZones.zoneFor(it, profile.ftp)}" } ?: "W", pColor,
+        label = if (live.powerWindowSec <= 1) "Potência" else "Potência $win",
+    )
+    LiveField.POWER_NOW -> FieldValue(fmtOpt(live.powerNow), "W")
     LiveField.AVG_POWER -> FieldValue(live.avgPower.toString(), "W")
     LiveField.MAX_POWER -> FieldValue(live.maxPower.toString(), "W")
     LiveField.W_PER_KG -> FieldValue(
-        if (profile.weightKg > 0 && live.power3s != null) fmt1(live.power3s / profile.weightKg) else "--", "W/kg",
+        if (profile.weightKg > 0 && live.powerAvg != null) fmt1(live.powerAvg / profile.weightKg) else "--", "W/kg", pColor,
+        label = if (live.powerWindowSec <= 1) "W/kg" else "W/kg ($win)",
     )
     LiveField.POWER_ZONE -> {
-        val z = live.power3s?.let { CogganZones.zoneFor(it, profile.ftp) }
-        FieldValue(z?.let { "Z$it" } ?: "--", z?.let { CogganZones.zone(it).name } ?: "")
+        val z = live.powerAvg?.let { CogganZones.zoneFor(it, profile.ftp) }
+        FieldValue(z?.let { "Z$it" } ?: "--", z?.let { CogganZones.zone(it).name } ?: "", pColor)
     }
     LiveField.HEART_RATE -> FieldValue(fmtOpt(live.heartRate), "bpm", Color(0xFFFF6B6B))
     LiveField.AVG_HR -> FieldValue(if (live.avgHr > 0) live.avgHr.toString() else "--", "bpm")
     LiveField.CADENCE -> FieldValue(fmtOpt(live.cadence), "rpm")
     LiveField.KCAL -> FieldValue(live.kcal.toString(), "kcal")
+    }
 }
 
 /**
@@ -192,7 +203,7 @@ private fun TileView(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                Text(tile.field.label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(value.label ?: tile.field.label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(value.value, fontSize = fontSize, fontWeight = FontWeight.Bold, color = value.color, maxLines = 1)
                 if (value.unit.isNotEmpty()) Text(value.unit, style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)

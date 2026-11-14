@@ -48,7 +48,11 @@ data class LiveRide(
     val avgSpeedKmh: Double = 0.0,
     val maxSpeedKmh: Double = 0.0,
     val distanceM: Double = 0.0,
-    val power3s: Int? = null,
+    /** Potência média dos últimos [powerWindowSec] segundos (valor principal da tela). */
+    val powerAvg: Int? = null,
+    /** Última leitura do medidor, sem média. */
+    val powerNow: Int? = null,
+    val powerWindowSec: Int = 3,
     val avgPower: Int = 0,
     val maxPower: Int = 0,
     val avgHr: Int = 0,
@@ -82,7 +86,9 @@ class RideRecorder(
     private var blockPowerN = 0
     private var stats = RideStats()
     private var coach: PowerCoach? = null
-    private val power3s = RollingAverage(3000)
+    private var powerDisplay = RollingAverage(3)
+    private var powerAlert = RollingAverage(5)
+    private var powerDisplaySec = 3
     private var ticker: Job? = null
     private var lastLocation: Location? = null
     private var startedAt = 0L
@@ -109,11 +115,13 @@ class RideRecorder(
         if (_live.value.status != RecStatus.IDLE) return
         val plan = pendingPlan
         stats = RideStats()
-        power3s.clear()
         buffer.clear()
         lastLocation = null
         startedAt = System.currentTimeMillis()
         val coachSettings = prefs.coach.value
+        powerDisplaySec = coachSettings.powerDisplaySec
+        powerDisplay = RollingAverage(coachSettings.powerDisplaySec)
+        powerAlert = RollingAverage(coachSettings.powerAlertSec)
         autoVoice = coachSettings.voiceEnabled
         blockIndex = -1; blockPowerSum = 0; blockPowerN = 0
         val v = VoiceAnnouncer(context, coachSettings.voiceName, coachSettings.speechRate)
@@ -127,6 +135,8 @@ class RideRecorder(
                 tolerancePct = coachSettings.tolerancePct,
                 alertDelaySec = coachSettings.alertDelaySec,
                 repeatEverySec = coachSettings.repeatEverySec,
+                // a média dos avisos ainda carrega o bloco anterior por alguns segundos
+                graceSec = maxOf(10, coachSettings.powerAlertSec + 2),
             ))
         }
         sensors.connectSaved()
@@ -136,7 +146,7 @@ class RideRecorder(
                 .build()
             fused.requestLocationUpdates(req, locationCallback, Looper.getMainLooper())
         }
-        _live.value = LiveRide(status = RecStatus.RECORDING, workout = plan)
+        _live.value = LiveRide(status = RecStatus.RECORDING, workout = plan, powerWindowSec = powerDisplaySec)
         scope.launch {
             val id = withContext(Dispatchers.IO) {
                 db.rides().insertRide(RideEntity(uuid = UUID.randomUUID().toString(), startedAt = startedAt, workoutName = plan?.name))
@@ -233,10 +243,11 @@ class RideRecorder(
         val now = System.currentTimeMillis()
         val r = sensors.readings.value
         val pw = r.powerNow(now)
-        if (pw != null) power3s.add(now, pw)
-        val avg3 = power3s.average(now)
+        if (pw != null) { powerDisplay.add(now, pw); powerAlert.add(now, pw) }
+        val avgShown = powerDisplay.average(now)
+        val avgAlert = powerAlert.average(now)
         if (cur.status != RecStatus.RECORDING) {
-            _live.value = cur.copy(power3s = avg3, heartRate = r.heartRateNow(now), cadence = r.cadenceNow(now))
+            _live.value = cur.copy(powerAvg = avgShown, powerNow = pw, heartRate = r.heartRateNow(now), cadence = r.cadenceNow(now))
             return
         }
         val elapsed = cur.elapsedSec + 1
@@ -246,7 +257,7 @@ class RideRecorder(
         stats.tickSecond(speed, pw, hr, cad)
 
         coach?.let { c ->
-            val phrases = c.tick(elapsed - 1, avg3)
+            val phrases = c.tick(elapsed - 1, avgAlert)
             phrases.forEach { p ->
                 when {
                     p.startsWith("Tá abaixo") -> voice?.beep(high = true)
@@ -279,7 +290,8 @@ class RideRecorder(
             avgSpeedKmh = stats.avgSpeedKmh,
             maxSpeedKmh = stats.maxSpeedKmh,
             distanceM = stats.distanceM,
-            power3s = avg3,
+            powerAvg = avgShown,
+            powerNow = pw,
             avgPower = stats.avgPower,
             maxPower = stats.maxPower,
             avgHr = stats.avgHr,
@@ -320,7 +332,7 @@ class RideRecorder(
         val l = _live.value
         val parts = mutableListOf<String>()
         blockText()?.let { parts += it }
-        l.power3s?.let { parts += "Potência $it watts, média ${stats.avgPower}." }
+        l.powerAvg?.let { parts += "Potência $it watts, média ${stats.avgPower}." }
         parts += "Velocidade ${kmh(l.speedKmh)}, média ${kmh(stats.avgSpeedKmh)} quilômetros por hora."
         l.heartRate?.let { parts += "Batimento $it." }
         l.cadence?.let { parts += "Cadência $it." }
@@ -334,7 +346,7 @@ class RideRecorder(
             VoiceQuery.SUMMARY, VoiceQuery.UNKNOWN -> fullSummary()
             VoiceQuery.BLOCK -> blockText() ?: "Você está no pedal livre, sem blocos. ${l.elapsedSec / 60} minutos de treino."
             VoiceQuery.SPEED -> "Velocidade ${kmh(l.speedKmh)}, média ${kmh(stats.avgSpeedKmh)}, máxima ${kmh(stats.maxSpeedKmh)} quilômetros por hora."
-            VoiceQuery.POWER -> l.power3s?.let { p ->
+            VoiceQuery.POWER -> l.powerAvg?.let { p ->
                 val zone = CogganZones.zoneFor(p, prefs.profile.value.ftp)
                 "Potência $p watts, zona $zone. Média ${stats.avgPower} watts." +
                     (if (blockPowerN > 0) " Média do bloco ${blockPowerSum / blockPowerN}." else "")
