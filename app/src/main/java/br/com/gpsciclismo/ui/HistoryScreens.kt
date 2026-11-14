@@ -16,6 +16,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -36,6 +38,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import br.com.gpsciclismo.GpsCiclismoApp
+import br.com.gpsciclismo.core.WorkoutScore
 import br.com.gpsciclismo.data.RideEntity
 import br.com.gpsciclismo.data.RidePointEntity
 import kotlinx.coroutines.launch
@@ -68,6 +71,10 @@ fun HistoryScreen(app: GpsCiclismoApp, nav: NavController) {
                     Column(Modifier.fillMaxWidth().padding(12.dp)) {
                         Text(dateFmt.format(Date(r.startedAt)) + (r.workoutName?.let { " · $it" } ?: ""),
                             style = MaterialTheme.typography.titleSmall)
+                        r.adherencePct?.let { pct ->
+                            Text("${WorkoutScore.starsText(pct)}  $pct% de aproveitamento", color = Amber,
+                                style = MaterialTheme.typography.bodyMedium)
+                        }
                         Text(
                             "${fmtKm(r.distanceM)} km · ${fmtTime(r.elapsedSec)} · ${fmt1(r.avgSpeedKmh)} km/h" +
                                 (if (r.avgPower > 0) " · ${r.avgPower} W" else "") +
@@ -108,6 +115,7 @@ fun RideDetailScreen(app: GpsCiclismoApp, id: Long, onBack: () -> Unit) {
             else Text("Sem percurso de GPS neste treino.", color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             r.workoutName?.let { Text(it, style = MaterialTheme.typography.titleMedium) }
+            r.adherencePct?.let { pct -> ScoreCard(pct) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Metric("Distância", fmtKm(r.distanceM), "km", Modifier.weight(1f))
                 Metric("Tempo", fmtTime(r.elapsedSec), "em movimento ${fmtTime(r.movingSec)}", Modifier.weight(1f))
@@ -167,4 +175,20 @@ fun RouteMap(points: List<GeoPoint>, modifier: Modifier = Modifier) {
         m.post { m.zoomToBoundingBox(box.increaseByScale(1.2f), false) }
         m.invalidate()
     })
+}
+
+/** Nota do treino por blocos: estrelas e % do tempo na zona. */
+@Composable
+fun ScoreCard(pct: Int) {
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.fillMaxWidth().padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("AVALIAÇÃO DO TREINO", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(WorkoutScore.starsText(pct), fontSize = 36.sp, color = Amber)
+            Text("$pct% de aproveitamento", style = MaterialTheme.typography.titleMedium)
+            Text(
+                "Tempo dentro da zona/alvo de cada bloco (sem contar pausas, blocos livres e os primeiros segundos de cada bloco).",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
 }

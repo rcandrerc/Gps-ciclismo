@@ -16,6 +16,7 @@ import br.com.gpsciclismo.data.AppDatabase
 import br.com.gpsciclismo.data.Prefs
 import br.com.gpsciclismo.data.RideSetup
 import br.com.gpsciclismo.core.TrainerCommand
+import br.com.gpsciclismo.core.WorkoutScore
 import br.com.gpsciclismo.data.RideEntity
 import br.com.gpsciclismo.data.RidePointEntity
 import br.com.gpsciclismo.core.VoiceQuery
@@ -67,6 +68,8 @@ data class LiveRide(
     val setup: RideSetup = RideSetup(),
     /** Carga que o app mandou o rolo segurar (ERG), ou null. */
     val ergWatts: Int? = null,
+    /** Aproveitamento até agora (% do tempo com alvo dentro da zona). */
+    val adherencePct: Int? = null,
 )
 
 /** Grava o treino: GPS + sensores a cada segundo, treinador por voz e banco de dados. */
@@ -89,6 +92,9 @@ class RideRecorder(
     private var blockIndex = -1
     private var blockPowerSum = 0L
     private var blockPowerN = 0
+    private var blockSec = 0
+    private var score = WorkoutScore()
+    private var graceSec = 10
     private var stats = RideStats()
     private var coach: PowerCoach? = null
     private var powerDisplay = RollingAverage(3)
@@ -132,7 +138,9 @@ class RideRecorder(
         powerDisplay = RollingAverage(coachSettings.powerDisplaySec)
         powerAlert = RollingAverage(coachSettings.powerAlertSec)
         autoVoice = coachSettings.voiceEnabled
-        blockIndex = -1; blockPowerSum = 0; blockPowerN = 0
+        blockIndex = -1; blockPowerSum = 0; blockPowerN = 0; blockSec = 0
+        score = WorkoutScore()
+        graceSec = maxOf(10, coachSettings.powerAlertSec + 2)
         val v = VoiceAnnouncer(context, coachSettings.voiceName, coachSettings.speechRate, useGoogle = coachSettings.googleVoice)
         voice = v
         commander = runCatching {
@@ -220,12 +228,14 @@ class RideRecorder(
                     maxHr = stats.maxHr,
                     avgCadence = stats.avgCadence,
                     kcal = kcal,
+                    adherencePct = score.pct,
                 ))
             }
         }
         commander?.release()
         commander = null
-        voice?.speak("Treino salvo. ${summaryText()}")
+        val grade = score.pct?.let { " Aproveitamento $it por cento, ${WorkoutScore.stars(it)} estrelas." } ?: ""
+        voice?.speak("Treino salvo. ${summaryText()}$grade")
         val v = voice
         scope.launch { delay(15_000); v?.shutdown() }
         voice = null
@@ -284,8 +294,13 @@ class RideRecorder(
             }
         }
         coach?.state?.let { st ->
-            if (st.blockIndex != blockIndex) { blockIndex = st.blockIndex; blockPowerSum = 0; blockPowerN = 0 }
+            if (st.blockIndex != blockIndex) { blockIndex = st.blockIndex; blockPowerSum = 0; blockPowerN = 0; blockSec = 0 }
             if (pw != null) { blockPowerSum += pw; blockPowerN++ }
+            blockSec++
+            // Nota: só blocos com alvo, depois do tempo de ajuste; sem sinal conta como fora.
+            if (st.range != null && st.status != PowerCoach.Status.FINISHED && blockSec > graceSec) {
+                score.add(PowerCoach.compare(avgAlert, st.range) == PowerCoach.Status.IN_ZONE)
+            }
         }
         val erg = updateTrainer()
         val summaryMin = prefs.coach.value.summaryEveryMin
@@ -318,6 +333,7 @@ class RideRecorder(
             cadence = cad,
             coach = coach?.state,
             ergWatts = erg,
+            adherencePct = score.pct,
         )
     }
 
