@@ -176,7 +176,9 @@ class RideRecorder(
     fun pause() {
         if (_live.value.status != RecStatus.RECORDING) return
         stats.breakSegment()
-        _live.value = _live.value.copy(status = RecStatus.PAUSED)
+        // ERG: solta a carga na pausa (estrada plana); o bloco volta sozinho no próximo segundo após continuar.
+        if (setup.ergActive && coach != null) sensors.setTrainerCommand(TrainerCommand.Flat)
+        _live.value = _live.value.copy(status = RecStatus.PAUSED, ergWatts = null)
         voice?.speak("Treino pausado.", urgent = true)
     }
 
