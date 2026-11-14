@@ -1,6 +1,7 @@
 package br.com.gpsciclismo.voice
 
 import android.content.Context
+import android.content.Intent
 import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
@@ -44,27 +45,46 @@ class VoiceAnnouncer(
         .setAudioAttributes(attrs)
         .build()
 
-    private val tts: TextToSpeech = TextToSpeech(context.applicationContext) { status ->
-        if (status == TextToSpeech.SUCCESS) {
-            val r = tts.setLanguage(Locale("pt", "BR"))
-            if (r == TextToSpeech.LANG_MISSING_DATA || r == TextToSpeech.LANG_NOT_SUPPORTED) {
-                tts.setLanguage(Locale.getDefault())
+    private val appContext = context.applicationContext
+    private lateinit var tts: TextToSpeech
+    /** Mecanismo em uso (Google, se instalado; senão o padrão do aparelho). */
+    var engine: String? = null; private set
+
+    init { create(if (googleInstalled(appContext)) GOOGLE_TTS else null) }
+
+    private fun create(engineName: String?) {
+        engine = engineName
+        val listener = TextToSpeech.OnInitListener { status ->
+            main.post {
+                if (status == TextToSpeech.SUCCESS) onInit()
+                else if (engineName != null) {
+                    // Google não quis abrir (ex.: desativado): volta para o padrão do aparelho.
+                    runCatching { tts.shutdown() }
+                    create(null)
+                }
             }
-            voiceName?.let { name -> runCatching { tts.voices?.firstOrNull { it.name == name } }.getOrNull()?.let { tts.voice = it } }
-            tts.setAudioAttributes(attrs)
-            tts.setSpeechRate(rate)
-            ready = true
-            onReady(this)
-            queuedBeforeReady.forEach { (t, cb) -> speak(t, onDone = cb) }
-            queuedBeforeReady.clear()
         }
-    }.also {
-        it.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+        tts = if (engineName != null) TextToSpeech(appContext, listener, engineName) else TextToSpeech(appContext, listener)
+        tts.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(id: String?) {}
             override fun onDone(id: String?) = finished(id)
             @Deprecated("API antiga") override fun onError(id: String?) = finished(id)
             override fun onStop(id: String?, interrupted: Boolean) = finished(id)
         })
+    }
+
+    private fun onInit() {
+        val r = tts.setLanguage(Locale("pt", "BR"))
+        if (r == TextToSpeech.LANG_MISSING_DATA || r == TextToSpeech.LANG_NOT_SUPPORTED) {
+            tts.setLanguage(Locale.getDefault())
+        }
+        voiceName?.let { name -> runCatching { tts.voices?.firstOrNull { it.name == name } }.getOrNull()?.let { tts.voice = it } }
+        tts.setAudioAttributes(attrs)
+        tts.setSpeechRate(rate)
+        ready = true
+        onReady(this)
+        queuedBeforeReady.forEach { (t, cb) -> speak(t, onDone = cb) }
+        queuedBeforeReady.clear()
     }
 
     private fun finished(id: String?) {
@@ -135,6 +155,16 @@ class VoiceAnnouncer(
     /** Bipe de "pode falar". */
     fun listenBeep() {
         tone?.startTone(ToneGenerator.TONE_PROP_ACK, 150)
+    }
+
+    companion object {
+        /** "Serviços de fala do Google": vozes bem mais naturais que a padrão de alguns tablets (ex.: Fire). */
+        const val GOOGLE_TTS = "com.google.android.tts"
+
+        fun googleInstalled(context: Context): Boolean = runCatching {
+            context.packageManager.queryIntentServices(Intent(TextToSpeech.Engine.INTENT_ACTION_TTS_SERVICE), 0)
+                .any { it.serviceInfo.packageName == GOOGLE_TTS }
+        }.getOrDefault(false)
     }
 
     fun shutdown() {
