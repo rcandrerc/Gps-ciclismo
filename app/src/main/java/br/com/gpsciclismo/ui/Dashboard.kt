@@ -3,7 +3,10 @@ package br.com.gpsciclismo.ui
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -51,7 +54,7 @@ import br.com.gpsciclismo.core.TileSize
 import br.com.gpsciclismo.data.Profile
 import br.com.gpsciclismo.recording.LiveRide
 
-private data class FieldValue(val value: String, val unit: String, val color: Color = Color.Unspecified, val label: String? = null)
+private data class FieldValue(val value: String, val unit: String, val color: Color = Color.Unspecified, val label: String? = null, val status: Boolean = false)
 
 private fun valueOf(f: LiveField, live: LiveRide, profile: Profile): FieldValue {
     // Cor da potência pelo alvo do bloco atual (só em treino com alvo), usando a média suavizada.
@@ -65,18 +68,18 @@ private fun valueOf(f: LiveField, live: LiveRide, profile: Profile): FieldValue 
     LiveField.TIME -> FieldValue(fmtTime(live.elapsedSec), "")
     LiveField.POWER_3S -> FieldValue(
         fmtOpt(live.powerAvg), live.powerAvg?.let { "W · Z${CogganZones.zoneFor(it, profile.ftp)}" } ?: "W", pColor,
-        label = if (live.powerWindowSec <= 1) "Potência" else "Potência $win",
+        label = if (live.powerWindowSec <= 1) "Potência" else "Potência $win", status = true,
     )
     LiveField.POWER_NOW -> FieldValue(fmtOpt(live.powerNow), "W")
     LiveField.AVG_POWER -> FieldValue(live.avgPower.toString(), "W")
     LiveField.MAX_POWER -> FieldValue(live.maxPower.toString(), "W")
     LiveField.W_PER_KG -> FieldValue(
         if (profile.weightKg > 0 && live.powerAvg != null) fmt1(live.powerAvg / profile.weightKg) else "--", "W/kg", pColor,
-        label = if (live.powerWindowSec <= 1) "W/kg" else "W/kg ($win)",
+        label = if (live.powerWindowSec <= 1) "W/kg" else "W/kg ($win)", status = true,
     )
     LiveField.POWER_ZONE -> {
         val z = live.powerAvg?.let { CogganZones.zoneFor(it, profile.ftp) }
-        FieldValue(z?.let { "Z$it" } ?: "--", z?.let { CogganZones.zone(it).name } ?: "", pColor)
+        FieldValue(z?.let { "Z$it" } ?: "--", z?.let { CogganZones.zone(it).name } ?: "", pColor, status = true)
     }
     LiveField.HEART_RATE -> FieldValue(fmtOpt(live.heartRate), "bpm", Color(0xFFFF6B6B))
     LiveField.AVG_HR -> FieldValue(if (live.avgHr > 0) live.avgHr.toString() else "--", "bpm")
@@ -91,7 +94,7 @@ private fun valueOf(f: LiveField, live: LiveRide, profile: Profile): FieldValue 
  * e "Adicionar campo" coloca campos novos.
  */
 @Composable
-fun Dashboard(app: GpsCiclismoApp, live: LiveRide, profile: Profile) {
+fun Dashboard(app: GpsCiclismoApp, live: LiveRide, profile: Profile, perRow: Int = 2) {
     val layout by app.prefs.dashboard.collectAsStateWithLifecycle()
     var editing by remember { mutableStateOf(false) }
     var adding by remember { mutableStateOf(false) }
@@ -123,7 +126,7 @@ fun Dashboard(app: GpsCiclismoApp, live: LiveRide, profile: Profile) {
             )
         }
 
-        layout.rows().forEach { row ->
+        layout.rows(perRow).forEach { row ->
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 row.forEach { (index, tile) ->
                     TileView(
@@ -192,19 +195,24 @@ private fun TileView(
         TileSize.WIDE -> 40.sp
         TileSize.BIG -> 64.sp
     }
+    val accent = value.color.takeIf { value.status && it != Color.Unspecified }
     Box(modifier) {
         Card(
             modifier = Modifier.fillMaxWidth().combinedClickableCompat(onLongClick = onLongPress),
-            colors = if (editing) CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
-            else CardDefaults.cardColors(),
+            colors = if (editing) CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHighest)
+            else CardDefaults.cardColors(containerColor = accent?.copy(alpha = 0.10f)?.compositeOver(MaterialTheme.colorScheme.surfaceContainer)
+                ?: MaterialTheme.colorScheme.surfaceContainer),
         ) {
+            // Faixa fina no topo com a cor de estado (verde/cinza/vermelho) quando houver alvo.
+            Box(Modifier.fillMaxWidth().height(3.dp).background(accent ?: Color.Transparent))
             Column(
                 Modifier.fillMaxWidth().padding(vertical = if (tile.size == TileSize.BIG) 18.dp else 10.dp, horizontal = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
-                Text(value.label ?: tile.field.label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(value.value, fontSize = fontSize, fontWeight = FontWeight.Bold, color = value.color, maxLines = 1)
+                Text((value.label ?: tile.field.label).uppercase(), style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                Text(value.value, fontSize = fontSize, fontWeight = FontWeight.Bold, color = value.color, maxLines = 1, style = Tabular)
                 if (value.unit.isNotEmpty()) Text(value.unit, style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
                 if (editing) {
