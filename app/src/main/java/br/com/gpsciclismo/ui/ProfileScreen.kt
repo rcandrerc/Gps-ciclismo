@@ -27,6 +27,9 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.platform.LocalContext
 import br.com.gpsciclismo.voice.VoiceAnnouncer
+import android.content.Intent
+import android.net.Uri
+import android.speech.tts.TextToSpeech
 import br.com.gpsciclismo.voice.VoiceOption
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -116,12 +119,24 @@ fun ProfileScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
                 Switch(voice, { voice = it })
             }
             Text("Voz", style = MaterialTheme.typography.titleSmall)
+            val google = remember { VoiceAnnouncer.googleInstalled(context) }
             Text(
-                "Escolha a voz e toque em Ouvir. As de qualidade alta costumam soar mais naturais. " +
-                    "Para baixar mais vozes: Configurações do Android > Acessibilidade > Saída de conversão de texto em voz.",
+                if (google) "Usando os Serviços de fala do Google. Escolha a voz e toque em Ouvir; " +
+                    "as de qualidade alta (sem internet) costumam soar mais naturais. Se não aparecer voz do Brasil, toque em Baixar vozes do Google."
+                else "Para vozes mais naturais, instale \"Serviços de fala do Google\" na loja de apps; o app passa a usar elas sozinho, " +
+                    "mesmo que o aparelho não deixe trocar o padrão.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            OutlinedButton(onClick = {
+                val install = Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA).setPackage(VoiceAnnouncer.GOOGLE_TTS)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                val store = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${VoiceAnnouncer.GOOGLE_TTS}"))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                val web = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=${VoiceAnnouncer.GOOGLE_TTS}"))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                listOf(if (google) install else store, web).firstOrNull { runCatching { context.startActivity(it) }.isSuccess }
+            }) { Text(if (google) "Baixar vozes do Google" else "Instalar vozes do Google") }
             if (voices.isEmpty()) Text("Carregando vozes…", style = MaterialTheme.typography.bodySmall)
             (listOf<VoiceOption?>(null) + voices).forEach { v ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
