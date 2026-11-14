@@ -19,6 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RecordVoiceOver
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
@@ -73,7 +75,7 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     RideHeader(app, live)
-                    TimeStrip(live)
+                    TimeStrip(app, live)
                     PowerPanel(live, numberSize = 96)
                     VoiceButtons(app)
                     RideControls(app, live) { confirmStop = true }
@@ -89,7 +91,7 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 RideHeader(app, live)
-                TimeStrip(live)
+                TimeStrip(app, live)
                 PowerPanel(live, numberSize = if (roomy) 96 else 72)
                 Dashboard(app, live, profile, perRow = if (roomy) 3 else 2)
                 Spacer(Modifier.height(4.dp))
@@ -154,11 +156,13 @@ private fun RideHeader(app: GpsCiclismoApp, live: LiveRide) {
 
 /** Tempo do treino e, no treino por blocos, quanto falta para acabar. */
 @Composable
-private fun TimeStrip(live: LiveRide) {
+private fun TimeStrip(app: GpsCiclismoApp, live: LiveRide) {
     val total = live.workout?.totalSec
     val remaining = total?.let { (it - live.elapsedSec).coerceAtLeast(0) }
+    val paused = live.status == RecStatus.PAUSED
     Column(
-        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.large)
+        Modifier.fillMaxWidth()
+            .background(if (paused) Amber.copy(alpha = 0.25f) else MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.large)
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
@@ -166,6 +170,16 @@ private fun TimeStrip(live: LiveRide) {
             Column(Modifier.weight(1f)) {
                 Text("TEMPO", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(fmtTime(live.elapsedSec), fontSize = 32.sp, style = Tabular, fontWeight = FontWeight.Bold)
+            }
+            // Pausar/continuar sempre à mão, perto do tempo (o tempo e os blocos congelam na pausa).
+            FilledTonalButton(
+                onClick = { if (paused) app.recorder.resume() else app.recorder.pause() },
+                modifier = Modifier.height(52.dp).padding(horizontal = 8.dp),
+                colors = if (paused) ButtonDefaults.filledTonalButtonColors(containerColor = Amber, contentColor = Color.Black)
+                else ButtonDefaults.filledTonalButtonColors(),
+            ) {
+                Icon(if (paused) Icons.Filled.PlayArrow else Icons.Filled.Pause, null)
+                Text(if (paused) " Continuar" else " Pausar")
             }
             if (remaining != null) Column(horizontalAlignment = Alignment.End) {
                 Text("FALTAM", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
