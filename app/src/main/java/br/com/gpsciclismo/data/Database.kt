@@ -12,6 +12,8 @@ import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Upsert
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -36,6 +38,8 @@ data class RideEntity(
     val maxHr: Int = 0,
     val avgCadence: Int = 0,
     val kcal: Int = 0,
+    /** Aproveitamento do treino por blocos (% do tempo na zona), ou null. */
+    val adherencePct: Int? = null,
 )
 
 @Entity(
@@ -102,7 +106,7 @@ interface WorkoutDao {
 
 @Database(
     entities = [RideEntity::class, RidePointEntity::class, WorkoutEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -111,6 +115,15 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         fun create(context: Context): AppDatabase =
-            Room.databaseBuilder(context, AppDatabase::class.java, "gps-ciclismo.db").build()
+            Room.databaseBuilder(context, AppDatabase::class.java, "gps-ciclismo.db")
+                .addMigrations(MIGRATION_1_2)
+                .build()
+
+        /** Versão 2: nota/aproveitamento do treino. Mantém o histórico. */
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE RideEntity ADD COLUMN adherencePct INTEGER")
+            }
+        }
     }
 }

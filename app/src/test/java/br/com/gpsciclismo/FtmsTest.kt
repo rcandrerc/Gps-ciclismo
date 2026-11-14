@@ -65,3 +65,19 @@ class FtmsTest {
         assertEquals(36.0, s.maxSpeedKmh, 0.01)
     }
 }
+
+class WorkoutScoreTest {
+    @Test fun pctAndStars() {
+        val s = br.com.gpsciclismo.core.WorkoutScore()
+        repeat(10) { s.add(false) }
+        assertNull(s.pct) // pouco tempo para dar nota
+        repeat(90) { s.add(true) }
+        assertEquals(90, s.pct)
+        assertEquals(5, br.com.gpsciclismo.core.WorkoutScore.stars(90))
+        assertEquals(4, br.com.gpsciclismo.core.WorkoutScore.stars(85))
+        assertEquals(3, br.com.gpsciclismo.core.WorkoutScore.stars(70))
+        assertEquals(2, br.com.gpsciclismo.core.WorkoutScore.stars(55))
+        assertEquals(1, br.com.gpsciclismo.core.WorkoutScore.stars(10))
+        assertEquals("★★★★☆", br.com.gpsciclismo.core.WorkoutScore.starsText(85))
+    }
+}
