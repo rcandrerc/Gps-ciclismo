@@ -48,6 +48,7 @@ class MainActivity : ComponentActivity() {
                             "workout/{id}",
                             arguments = listOf(navArgument("id") { type = NavType.LongType }),
                         ) { Centered { WorkoutEditorScreen(app, it.arguments?.getLong("id") ?: 0L) { nav.popBackStack() } } }
+                        composable("calendar") { Centered { CalendarScreen(app, nav) } }
                         composable("live") { LiveRideScreen(app, nav) }
                         composable("history") { Centered { HistoryScreen(app, nav) } }
                         composable(

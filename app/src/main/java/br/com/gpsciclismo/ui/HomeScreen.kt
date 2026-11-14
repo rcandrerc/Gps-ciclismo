@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bluetooth
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.PedalBike
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.History
@@ -28,6 +29,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -200,6 +202,14 @@ fun HomeScreen(app: GpsCiclismoApp, nav: NavController) {
         ) {
             Icon(Icons.Filled.FitnessCenter, null)
             Text("  Treino por zonas", style = MaterialTheme.typography.titleMedium)
+        }
+        OutlinedButton(
+            onClick = { nav.navigate("calendar") },
+            modifier = Modifier.fillMaxWidth().height(68.dp),
+            shape = MaterialTheme.shapes.large,
+        ) {
+            Icon(Icons.Filled.CalendarMonth, null)
+            Text("  Calendário de treinos", style = MaterialTheme.typography.titleMedium)
         }
         Spacer(Modifier.height(4.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
