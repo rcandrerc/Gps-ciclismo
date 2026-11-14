@@ -1,5 +1,5 @@
 {
- "name": "Volta ao FTP - mês 1 (4x40 min)",
+ "name": "Volta ao FTP - mês 1 (4x40 min, foco FTP)",
  "updated": "2026-11-14",
  "days": [
   {
@@ -94,7 +94,7 @@
    "date": "2026-11-15",
    "title": "Recuperação Z2 leve 40 min",
    "where": "rolo",
-   "notes": "Z2 contínuo, cadência solta. É o treino que recupera e reconstrói a base.",
+   "notes": "Z2 contínuo, cadência solta. Recupera do treino de sábado e mantém a base aeróbica que sustenta o FTP.",
    "workout": {
     "name": "Recuperação Z2 leve 40 min",
     "blocks": [
@@ -135,165 +135,9 @@
   },
   {
    "date": "2026-11-17",
-   "title": "Sweet spot 3x5 min a 180 W",
-   "where": "rolo",
-   "notes": "Primeiro contato com sweet spot, bem controlado. Recupera 3 min em Z2.",
-   "workout": {
-    "name": "Sweet spot 3x5 min a 180 W",
-    "blocks": [
-     {
-      "durationSec": 180,
-      "target": {
-       "type": "zone",
-       "zone": 1
-      }
-     },
-     {
-      "durationSec": 300,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 210,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 300,
-      "target": {
-       "type": "watts",
-       "watts": 180
-      }
-     },
-     {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 300,
-      "target": {
-       "type": "watts",
-       "watts": 180
-      }
-     },
-     {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 300,
-      "target": {
-       "type": "watts",
-       "watts": 180
-      }
-     },
-     {
-      "durationSec": 210,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 240,
-      "target": {
-       "type": "zone",
-       "zone": 1
-      }
-     }
-    ]
-   }
-  },
-  {
-   "date": "2026-11-18",
-   "title": "Descanso"
-  },
-  {
-   "date": "2026-11-19",
-   "title": "Tempo 2x8 min a 170 W",
-   "where": "rolo",
-   "notes": "Tempo confortável, cadência 85-95.",
-   "workout": {
-    "name": "Tempo 2x8 min a 170 W",
-    "blocks": [
-     {
-      "durationSec": 180,
-      "target": {
-       "type": "zone",
-       "zone": 1
-      }
-     },
-     {
-      "durationSec": 300,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 270,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 480,
-      "target": {
-       "type": "watts",
-       "watts": 170
-      }
-     },
-     {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 480,
-      "target": {
-       "type": "watts",
-       "watts": 170
-      }
-     },
-     {
-      "durationSec": 270,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 240,
-      "target": {
-       "type": "zone",
-       "zone": 1
-      }
-     }
-    ]
-   }
-  },
-  {
-   "date": "2026-11-20",
-   "title": "Descanso"
-  },
-  {
-   "date": "2026-11-21",
    "title": "Sweet spot 3x6 min a 185 W",
    "where": "rolo",
-   "notes": "Forte mas sustentável. Recupera 3 min em Z2.",
+   "notes": "Readaptação: forte mas sustentável, dá pra falar frases curtas. Recupera 3 min em Z2.",
    "workout": {
     "name": "Sweet spot 3x6 min a 185 W",
     "blocks": [
@@ -371,10 +215,166 @@
    }
   },
   {
+   "date": "2026-11-18",
+   "title": "Descanso"
+  },
+  {
+   "date": "2026-11-19",
+   "title": "Sweet spot 2x10 min a 185 W",
+   "where": "rolo",
+   "notes": "Blocos mais longos no mesmo ritmo. Recupera 4 min em Z2.",
+   "workout": {
+    "name": "Sweet spot 2x10 min a 185 W",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      }
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 600,
+      "target": {
+       "type": "watts",
+       "watts": 185
+      }
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 600,
+      "target": {
+       "type": "watts",
+       "watts": 185
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      }
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-11-20",
+   "title": "Descanso"
+  },
+  {
+   "date": "2026-11-21",
+   "title": "Limiar 3x5 min a 200 W",
+   "where": "rolo",
+   "notes": "Primeiro contato com o limiar (~95% do FTP). Recupera 3 min em Z2.",
+   "workout": {
+    "name": "Limiar 3x5 min a 200 W",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      }
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 210,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 200
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 200
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 200
+      }
+     },
+     {
+      "durationSec": 210,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      }
+     }
+    ]
+   }
+  },
+  {
    "date": "2026-11-22",
    "title": "Recuperação Z2 leve 40 min",
    "where": "rolo",
-   "notes": "Z2 contínuo, cadência solta. É o treino que recupera e reconstrói a base.",
+   "notes": "Z2 contínuo, cadência solta. Recupera do treino de sábado e mantém a base aeróbica que sustenta o FTP.",
    "workout": {
     "name": "Recuperação Z2 leve 40 min",
     "blocks": [
@@ -415,11 +415,11 @@
   },
   {
    "date": "2026-11-24",
-   "title": "Sweet spot 3x7 min a 188 W",
+   "title": "Sweet spot 3x7 min a 190 W",
    "where": "rolo",
    "notes": "Recupera 3 min em Z2.",
    "workout": {
-    "name": "Sweet spot 3x7 min a 188 W",
+    "name": "Sweet spot 3x7 min a 190 W",
     "blocks": [
      {
       "durationSec": 180,
@@ -439,7 +439,7 @@
       "durationSec": 420,
       "target": {
        "type": "watts",
-       "watts": 188
+       "watts": 190
       }
      },
      {
@@ -453,7 +453,7 @@
       "durationSec": 420,
       "target": {
        "type": "watts",
-       "watts": 188
+       "watts": 190
       }
      },
      {
@@ -467,7 +467,7 @@
       "durationSec": 420,
       "target": {
        "type": "watts",
-       "watts": 188
+       "watts": 190
       }
      },
      {
@@ -493,11 +493,11 @@
   },
   {
    "date": "2026-11-26",
-   "title": "Tempo 2x10 min a 172 W",
+   "title": "VO2 máx 5x2 min a 240 W",
    "where": "rolo",
-   "notes": "Tempo firme, sem passar de Z3.",
+   "notes": "Curto e duro, sobe o teto do FTP. Recupera 2 min em Z2. Se não fechar o 5º, pare no 4º.",
    "workout": {
-    "name": "Tempo 2x10 min a 172 W",
+    "name": "VO2 máx 5x2 min a 240 W",
     "blocks": [
      {
       "durationSec": 180,
@@ -514,35 +514,77 @@
       }
      },
      {
-      "durationSec": 150,
+      "durationSec": 300,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 600,
+      "durationSec": 120,
       "target": {
        "type": "watts",
-       "watts": 172
+       "watts": 240
       }
      },
      {
-      "durationSec": 180,
+      "durationSec": 120,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 600,
+      "durationSec": 120,
       "target": {
        "type": "watts",
-       "watts": 172
+       "watts": 240
       }
      },
      {
-      "durationSec": 150,
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      }
+     },
+     {
+      "durationSec": 300,
       "target": {
        "type": "watts",
        "watts": 145
@@ -564,11 +606,11 @@
   },
   {
    "date": "2026-11-28",
-   "title": "Sweet spot 2x10 min a 188 W",
+   "title": "Over-under 3x6 min (190/220 W)",
    "where": "rolo",
-   "notes": "Recupera 4 min em Z2.",
+   "notes": "Cada bloco: 2 min a 190 W, 1 min a 220 W, repete. Ensina a limpar o lactato acima do limiar. Recupera 3 min em Z2.",
    "workout": {
-    "name": "Sweet spot 2x10 min a 188 W",
+    "name": "Over-under 3x6 min (190/220 W)",
     "blocks": [
      {
       "durationSec": 180,
@@ -592,24 +634,101 @@
       }
      },
      {
-      "durationSec": 600,
+      "durationSec": 120,
       "target": {
        "type": "watts",
-       "watts": 188
+       "watts": 190
       }
      },
      {
-      "durationSec": 240,
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 220
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 220
+      }
+     },
+     {
+      "durationSec": 180,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 600,
+      "durationSec": 120,
       "target": {
        "type": "watts",
-       "watts": 188
+       "watts": 190
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 220
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 220
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 220
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 220
       }
      },
      {
@@ -633,7 +752,7 @@
    "date": "2026-11-29",
    "title": "Recuperação Z2 leve 40 min",
    "where": "rolo",
-   "notes": "Z2 contínuo, cadência solta. É o treino que recupera e reconstrói a base.",
+   "notes": "Z2 contínuo, cadência solta. Recupera do treino de sábado e mantém a base aeróbica que sustenta o FTP.",
    "workout": {
     "name": "Recuperação Z2 leve 40 min",
     "blocks": [
@@ -674,11 +793,11 @@
   },
   {
    "date": "2026-12-01",
-   "title": "Sweet spot 2x12 min a 192 W",
+   "title": "Sweet spot 2x12 min a 195 W",
    "where": "rolo",
-   "notes": "O treino mais longo do mês. Se o 1º bloco pesar demais, baixe para 185 W.",
+   "notes": "Se o 1º bloco pesar demais, baixe para 188 W. Recupera 4 min em Z2.",
    "workout": {
-    "name": "Sweet spot 2x12 min a 192 W",
+    "name": "Sweet spot 2x12 min a 195 W",
     "blocks": [
      {
       "durationSec": 180,
@@ -698,7 +817,7 @@
       "durationSec": 720,
       "target": {
        "type": "watts",
-       "watts": 192
+       "watts": 195
       }
      },
      {
@@ -712,7 +831,7 @@
       "durationSec": 720,
       "target": {
        "type": "watts",
-       "watts": 192
+       "watts": 195
       }
      },
      {
@@ -731,11 +850,11 @@
   },
   {
    "date": "2026-12-03",
-   "title": "Tempo 22 min contínuo a 175 W",
+   "title": "VO2 máx 5x3 min a 235 W",
    "where": "rolo",
-   "notes": "Bloco único de tempo, ritmo constante.",
+   "notes": "Recupera 3 min em Z2. Se não fechar o 5º, pare no 4º.",
    "workout": {
-    "name": "Tempo 22 min contínuo a 175 W",
+    "name": "VO2 máx 5x3 min a 235 W",
     "blocks": [
      {
       "durationSec": 180,
@@ -755,18 +874,67 @@
       "durationSec": 180,
       "target": {
        "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 1320,
-      "target": {
-       "type": "watts",
-       "watts": 175
+       "watts": 235
       }
      },
      {
       "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      }
+     },
+     {
+      "durationSec": 60,
       "target": {
        "type": "watts",
        "watts": 145
@@ -788,11 +956,11 @@
   },
   {
    "date": "2026-12-05",
-   "title": "Limiar 4x5 min a 205 W",
+   "title": "Limiar 3x7 min a 205 W",
    "where": "rolo",
-   "notes": "Primeiro contato com o limiar (~98% do FTP). Recupera 2,5 min em Z2.",
+   "notes": "~98% do FTP. Recupera 2,5 min em Z2.",
    "workout": {
-    "name": "Limiar 4x5 min a 205 W",
+    "name": "Limiar 3x7 min a 205 W",
     "blocks": [
      {
       "durationSec": 180,
@@ -809,7 +977,14 @@
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 420,
       "target": {
        "type": "watts",
        "watts": 205
@@ -823,7 +998,7 @@
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 420,
       "target": {
        "type": "watts",
        "watts": 205
@@ -837,28 +1012,14 @@
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 420,
       "target": {
        "type": "watts",
        "watts": 205
       }
      },
      {
-      "durationSec": 150,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 300,
-      "target": {
-       "type": "watts",
-       "watts": 205
-      }
-     },
-     {
-      "durationSec": 30,
+      "durationSec": 60,
       "target": {
        "type": "watts",
        "watts": 145
@@ -878,7 +1039,7 @@
    "date": "2026-12-06",
    "title": "Recuperação Z2 leve 40 min",
    "where": "rolo",
-   "notes": "Z2 contínuo, cadência solta. É o treino que recupera e reconstrói a base.",
+   "notes": "Z2 contínuo, cadência solta. Recupera do treino de sábado e mantém a base aeróbica que sustenta o FTP.",
    "workout": {
     "name": "Recuperação Z2 leve 40 min",
     "blocks": [
@@ -919,11 +1080,11 @@
   },
   {
    "date": "2026-12-08",
-   "title": "Descarga 3x3 min a 195 W (semana leve)",
+   "title": "Descarga 2x6 min a 190 W (semana leve)",
    "where": "rolo",
-   "notes": "Semana leve para chegar descansado no teste.",
+   "notes": "Semana leve para chegar descansado no teste. Recupera 4 min em Z2.",
    "workout": {
-    "name": "Descarga 3x3 min a 195 W (semana leve)",
+    "name": "Descarga 2x6 min a 190 W (semana leve)",
     "blocks": [
      {
       "durationSec": 180,
@@ -940,49 +1101,35 @@
       }
      },
      {
-      "durationSec": 390,
+      "durationSec": 360,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 180,
+      "durationSec": 360,
       "target": {
        "type": "watts",
-       "watts": 195
+       "watts": 190
       }
      },
      {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 195
-      }
-     },
-     {
-      "durationSec": 180,
+      "durationSec": 240,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 180,
+      "durationSec": 360,
       "target": {
        "type": "watts",
-       "watts": 195
+       "watts": 190
       }
      },
      {
-      "durationSec": 390,
+      "durationSec": 360,
       "target": {
        "type": "watts",
        "watts": 145
