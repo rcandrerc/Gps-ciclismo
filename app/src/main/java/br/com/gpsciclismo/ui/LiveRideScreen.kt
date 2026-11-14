@@ -41,6 +41,7 @@ import br.com.gpsciclismo.GpsCiclismoApp
 import br.com.gpsciclismo.core.CogganZones
 import br.com.gpsciclismo.core.PowerCoach
 import br.com.gpsciclismo.recording.RecStatus
+import br.com.gpsciclismo.ble.TrainerControl
 import kotlinx.coroutines.launch
 
 @Composable
@@ -64,12 +65,27 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
                 live.workout?.name ?: "Pedal livre",
                 style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f),
             )
-            val gps = live.gpsAccuracyM
-            Text(
-                if (gps == null) "GPS procurando…" else "GPS ±${gps.toInt()} m",
-                color = if (gps != null && gps <= 25f) Green else Amber,
-                style = MaterialTheme.typography.labelMedium,
-            )
+            if (live.setup.indoor) {
+                val trainer by app.sensors.trainer.collectAsStateWithLifecycle()
+                Text(
+                    when {
+                        !live.setup.ergActive -> "Indoor"
+                        trainer == TrainerControl.DENIED -> "Indoor · ERG recusado"
+                        trainer != TrainerControl.OK -> "Indoor · ERG conectando…"
+                        live.ergWatts != null -> "Indoor · ERG ${live.ergWatts} W"
+                        else -> "Indoor · ERG livre"
+                    },
+                    color = if (!live.setup.ergActive || trainer == TrainerControl.OK) Green else Amber,
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            } else {
+                val gps = live.gpsAccuracyM
+                Text(
+                    if (gps == null) "GPS procurando…" else "GPS ±${gps.toInt()} m",
+                    color = if (gps != null && gps <= 25f) Green else Amber,
+                    style = MaterialTheme.typography.labelMedium,
+                )
+            }
         }
 
         // Painel do treino por zonas

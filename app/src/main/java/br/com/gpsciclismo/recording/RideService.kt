@@ -47,7 +47,10 @@ class RideService : LifecycleService() {
             .build()
         var type = 0
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            type = ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+            // Indoor pode rodar sem permissão de localização; aí o serviço não declara GPS.
+            val locOk = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            if (locOk) type = ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
             val btOk = Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
                 ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
             if (btOk) type = type or ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE

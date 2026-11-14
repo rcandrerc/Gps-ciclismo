@@ -14,6 +14,8 @@ import br.com.gpsciclismo.core.RollingAverage
 import br.com.gpsciclismo.core.WorkoutPlan
 import br.com.gpsciclismo.data.AppDatabase
 import br.com.gpsciclismo.data.Prefs
+import br.com.gpsciclismo.data.RideSetup
+import br.com.gpsciclismo.core.TrainerCommand
 import br.com.gpsciclismo.data.RideEntity
 import br.com.gpsciclismo.data.RidePointEntity
 import br.com.gpsciclismo.core.VoiceQuery
@@ -62,6 +64,9 @@ data class LiveRide(
     val gpsAccuracyM: Float? = null,
     val workout: WorkoutPlan? = null,
     val coach: PowerCoach.State? = null,
+    val setup: RideSetup = RideSetup(),
+    /** Carga que o app mandou o rolo segurar (ERG), ou null. */
+    val ergWatts: Int? = null,
 )
 
 /** Grava o treino: GPS + sensores a cada segundo, treinador por voz e banco de dados. */
@@ -102,18 +107,22 @@ class RideRecorder(
     }
 
     /** Chamado pela tela: inicia o serviço em primeiro plano, que chama [begin]. */
-    fun start(plan: WorkoutPlan?) {
+    fun start(plan: WorkoutPlan?, setup: RideSetup = RideSetup()) {
         if (_live.value.status != RecStatus.IDLE) return
         pendingPlan = plan
+        pendingSetup = setup
         ContextCompat.startForegroundService(context, Intent(context, RideService::class.java))
     }
 
     private var pendingPlan: WorkoutPlan? = null
+    private var pendingSetup = RideSetup()
+    private var setup = RideSetup()
 
     @SuppressLint("MissingPermission")
     internal fun begin() {
         if (_live.value.status != RecStatus.IDLE) return
         val plan = pendingPlan
+        setup = pendingSetup
         stats = RideStats()
         buffer.clear()
         lastLocation = null
@@ -140,13 +149,13 @@ class RideRecorder(
             ))
         }
         sensors.connectSaved()
-        runCatching {
+        if (!setup.indoor) runCatching {
             val req = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
                 .setMinUpdateIntervalMillis(1000)
                 .build()
             fused.requestLocationUpdates(req, locationCallback, Looper.getMainLooper())
         }
-        _live.value = LiveRide(status = RecStatus.RECORDING, workout = plan, powerWindowSec = powerDisplaySec)
+        _live.value = LiveRide(status = RecStatus.RECORDING, workout = plan, powerWindowSec = powerDisplaySec, setup = setup)
         scope.launch {
             val id = withContext(Dispatchers.IO) {
                 db.rides().insertRide(RideEntity(uuid = UUID.randomUUID().toString(), startedAt = startedAt, workoutName = plan?.name))
@@ -183,6 +192,10 @@ class RideRecorder(
         if (cur.status == RecStatus.IDLE) return null
         ticker?.cancel()
         fused.removeLocationUpdates(locationCallback)
+        if (setup.ergActive) {
+            sensors.setTrainerCommand(TrainerCommand.None) // solta o rolo antes de desconectar
+            delay(800)
+        }
         sensors.disconnectAll()
         val rideId = cur.rideId
         val endedAt = System.currentTimeMillis()
@@ -233,6 +246,7 @@ class RideRecorder(
     }
 
     private fun currentSpeed(now: Long): Double? {
+        if (setup.indoor) return sensors.readings.value.trainerSpeedNow(now)
         val l = lastLocation ?: return null
         if (now - l.time > 4000 || !l.hasSpeed()) return 0.0
         return l.speed * 3.6
@@ -255,6 +269,7 @@ class RideRecorder(
         val hr = r.heartRateNow(now)
         val cad = r.cadenceNow(now)
         stats.tickSecond(speed, pw, hr, cad)
+        if (setup.indoor) stats.addIndoorSecond(speed)
 
         coach?.let { c ->
             val phrases = c.tick(elapsed - 1, avgAlert)
@@ -270,6 +285,7 @@ class RideRecorder(
             if (st.blockIndex != blockIndex) { blockIndex = st.blockIndex; blockPowerSum = 0; blockPowerN = 0 }
             if (pw != null) { blockPowerSum += pw; blockPowerN++ }
         }
+        val erg = updateTrainer()
         val summaryMin = prefs.coach.value.summaryEveryMin
         if (autoVoice && summaryMin > 0 && elapsed % (summaryMin * 60) == 0) voice?.speak(fullSummary())
 
@@ -299,7 +315,18 @@ class RideRecorder(
             heartRate = hr,
             cadence = cad,
             coach = coach?.state,
+            ergWatts = erg,
         )
+    }
+
+    /** ERG: manda para o rolo a carga do bloco atual. Retorna os watts mandados. */
+    private fun updateTrainer(): Int? {
+        if (!setup.ergActive) return null
+        val st = coach?.state ?: return null // pedal livre: o app não mexe no rolo
+        val target = st.target.takeIf { st.status != PowerCoach.Status.FINISHED }
+        val watts = target?.ergWatts(prefs.profile.value.ftp)
+        sensors.setTrainerCommand(if (watts != null) TrainerCommand.Erg(watts) else TrainerCommand.Flat)
+        return watts
     }
 
     private suspend fun flush() {

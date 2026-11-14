@@ -19,7 +19,13 @@ import androidx.compose.material.icons.filled.PedalBike
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Switch
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +33,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +46,8 @@ import androidx.navigation.NavController
 import br.com.gpsciclismo.GpsCiclismoApp
 import br.com.gpsciclismo.ble.BleSensorManager
 import br.com.gpsciclismo.core.WorkoutPlan
+import br.com.gpsciclismo.data.RideSetup
+import br.com.gpsciclismo.data.SensorKind
 
 /** Todas as permissões que o treino precisa. */
 fun ridePermissions(): Array<String> = buildList {
@@ -48,20 +58,88 @@ fun ridePermissions(): Array<String> = buildList {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(Manifest.permission.POST_NOTIFICATIONS)
 }.distinct().toTypedArray()
 
-/** Pede as permissões e, se o GPS foi liberado, inicia o treino. */
+/**
+ * Antes de iniciar pergunta Indoor/Outdoor e ERG, pede as permissões e inicia.
+ * Outdoor precisa do GPS; indoor não.
+ */
 @Composable
 fun rememberStartRide(app: GpsCiclismoApp, nav: NavController): (WorkoutPlan?) -> Unit {
     val pending = remember { arrayOfNulls<WorkoutPlan>(1) }
+    val chosen = remember { arrayOf(RideSetup()) }
+    var asking by remember { mutableStateOf(false) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { res ->
-        if (res[Manifest.permission.ACCESS_FINE_LOCATION] == true || res[Manifest.permission.ACCESS_COARSE_LOCATION] == true) {
-            app.recorder.start(pending[0])
+        val gps = res[Manifest.permission.ACCESS_FINE_LOCATION] == true || res[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (gps || chosen[0].indoor) {
+            app.recorder.start(pending[0], chosen[0])
             nav.navigate("live") { popUpTo("home") }
         }
     }
+    if (asking) {
+        StartRideDialog(
+            app = app,
+            plan = pending[0],
+            onDismiss = { asking = false },
+            onStart = { setup ->
+                asking = false
+                chosen[0] = setup
+                app.prefs.saveRideSetup(setup)
+                launcher.launch(ridePermissions())
+            },
+        )
+    }
     return { plan ->
         pending[0] = plan
-        launcher.launch(ridePermissions())
+        asking = true
     }
+}
+
+@Composable
+private fun StartRideDialog(app: GpsCiclismoApp, plan: WorkoutPlan?, onDismiss: () -> Unit, onStart: (RideSetup) -> Unit) {
+    val saved by app.prefs.rideSetup.collectAsStateWithLifecycle()
+    val sensors by app.prefs.sensors.collectAsStateWithLifecycle()
+    var indoor by remember { mutableStateOf(saved.indoor) }
+    var erg by remember { mutableStateOf(saved.erg) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(plan?.name ?: "Pedal livre") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                    SegmentedButton(selected = !indoor, onClick = { indoor = false }, shape = SegmentedButtonDefaults.itemShape(0, 2)) {
+                        Text("Outdoor")
+                    }
+                    SegmentedButton(selected = indoor, onClick = { indoor = true }, shape = SegmentedButtonDefaults.itemShape(1, 2)) {
+                        Text("Indoor")
+                    }
+                }
+                if (indoor) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text("ERG", style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                "O app controla a carga do rolo pelos watts de cada bloco",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(checked = erg, onCheckedChange = { erg = it })
+                    }
+                    val note = when {
+                        erg && sensors[SensorKind.TRAINER] == null -> "Escolha o rolo em Sensores (\"Usar p/ Rolo smart\") para o ERG funcionar."
+                        erg && plan == null -> "No pedal livre o ERG não muda a carga. Use um treino por zonas."
+                        else -> "Sem GPS: velocidade e distância vêm do rolo."
+                    }
+                    Text(note, style = MaterialTheme.typography.bodySmall,
+                        color = if (note.startsWith("Sem GPS")) MaterialTheme.colorScheme.onSurfaceVariant else Amber)
+                } else {
+                    Text("GPS ligado, percurso salvo no mapa.", style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        },
+        confirmButton = { Button(onClick = { onStart(RideSetup(indoor = indoor, erg = erg)) }) { Text("Iniciar") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
+    )
 }
 
 @Composable
