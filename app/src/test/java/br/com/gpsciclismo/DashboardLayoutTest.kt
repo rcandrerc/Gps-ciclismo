@@ -45,4 +45,12 @@ class RideStatsTest {
         assertEquals(0.0, s.distanceM, 0.001)
         assertEquals(0.0, s.avgSpeedKmh, 0.001)
     }
+
+    @Test fun tabletPacksMoreTilesPerRow() {
+        val rows = DashboardLayout.DEFAULT.rows(perRow = 4).map { r -> r.map { it.value.field } }
+        assertEquals(listOf(LiveField.TIME, LiveField.DISTANCE), rows[0])
+        assertEquals(listOf(LiveField.SPEED), rows[1])
+        assertEquals(4, rows[2].size)
+        assertEquals(4, rows.size)
+    }
 }

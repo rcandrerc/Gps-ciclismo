@@ -12,6 +12,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -39,20 +40,20 @@ class MainActivity : ComponentActivity() {
                     val start = remember { if (app.recorder.live.value.status == RecStatus.IDLE) "home" else "live" }
                     UpdatePrompt(enabled = live.status == RecStatus.IDLE)
                     NavHost(nav, startDestination = start) {
-                        composable("home") { HomeScreen(app, nav) }
-                        composable("profile") { ProfileScreen(app) { nav.popBackStack() } }
-                        composable("sensors") { SensorsScreen(app) { nav.popBackStack() } }
-                        composable("workouts") { WorkoutsScreen(app, nav) }
+                        composable("home") { Centered { HomeScreen(app, nav) } }
+                        composable("profile") { Centered { ProfileScreen(app) { nav.popBackStack() } } }
+                        composable("sensors") { Centered { SensorsScreen(app) { nav.popBackStack() } } }
+                        composable("workouts") { Centered { WorkoutsScreen(app, nav) } }
                         composable(
                             "workout/{id}",
                             arguments = listOf(navArgument("id") { type = NavType.LongType }),
-                        ) { WorkoutEditorScreen(app, it.arguments?.getLong("id") ?: 0L) { nav.popBackStack() } }
+                        ) { Centered { WorkoutEditorScreen(app, it.arguments?.getLong("id") ?: 0L) { nav.popBackStack() } } }
                         composable("live") { LiveRideScreen(app, nav) }
-                        composable("history") { HistoryScreen(app, nav) }
+                        composable("history") { Centered { HistoryScreen(app, nav) } }
                         composable(
                             "ride/{id}",
                             arguments = listOf(navArgument("id") { type = NavType.LongType }),
-                        ) { RideDetailScreen(app, it.arguments?.getLong("id") ?: 0L) { nav.popBackStack() } }
+                        ) { Centered(960.dp) { RideDetailScreen(app, it.arguments?.getLong("id") ?: 0L) { nav.popBackStack() } } }
                     }
                 }
                 }

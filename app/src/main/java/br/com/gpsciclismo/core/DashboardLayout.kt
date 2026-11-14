@@ -49,21 +49,25 @@ data class DashboardLayout(val tiles: List<Tile>) {
     /** Campos que ainda não estão na tela. */
     fun available(): List<LiveField> = LiveField.entries.filter { f -> tiles.none { it.field == f } }
 
-    /** Agrupa em linhas: dois pequenos dividem uma linha; largo/grande ocupam a linha inteira. */
-    fun rows(): List<List<IndexedValue<Tile>>> {
+    /**
+     * Agrupa em linhas: até [perRow] campos pequenos dividem uma linha (2 no celular, 3 ou 4 no tablet);
+     * largo/grande ocupam a linha inteira.
+     */
+    fun rows(perRow: Int = 2): List<List<IndexedValue<Tile>>> {
+        val n = perRow.coerceAtLeast(1)
         val rows = mutableListOf<List<IndexedValue<Tile>>>()
-        var pending: IndexedValue<Tile>? = null
+        val pending = mutableListOf<IndexedValue<Tile>>()
+        fun flush() { if (pending.isNotEmpty()) { rows += pending.toList(); pending.clear() } }
         tiles.withIndex().forEach { t ->
             if (t.value.size == TileSize.SMALL) {
-                val p = pending
-                if (p == null) pending = t else { rows += listOf(p, t); pending = null }
+                pending += t
+                if (pending.size == n) flush()
             } else {
-                pending?.let { rows += listOf(it) }
-                pending = null
+                flush()
                 rows += listOf(t)
             }
         }
-        pending?.let { rows += listOf(it) }
+        flush()
         return rows
     }
 

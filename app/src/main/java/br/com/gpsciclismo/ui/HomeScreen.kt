@@ -23,7 +23,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -69,32 +76,54 @@ fun HomeScreen(app: GpsCiclismoApp, nav: NavController) {
     val profile by app.prefs.profile.collectAsStateWithLifecycle()
     val sensors by app.prefs.sensors.collectAsStateWithLifecycle()
     val start = rememberStartRide(app, nav)
+    val cs = MaterialTheme.colorScheme
 
     Column(
-        Modifier.fillMaxSize().padding(20.dp),
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Spacer(Modifier.height(24.dp))
-        Text("GPS Ciclismo", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(12.dp))
+        Text("GPS CICLISMO", style = MaterialTheme.typography.labelMedium, color = cs.primary)
         Text(
-            buildString {
-                if (profile.name.isNotBlank()) append("${profile.name} · ")
-                append("FTP ${profile.ftp} W")
-                if (profile.weightKg > 0) append(" · ${fmt1(profile.ftp / profile.weightKg)} W/kg")
-                append(" · ${sensors.size} sensor(es)")
-            },
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            if (profile.name.isNotBlank()) "Bora pedalar, ${profile.name.trim().substringBefore(' ')}" else "Bora pedalar",
+            style = MaterialTheme.typography.headlineMedium,
         )
-        Spacer(Modifier.height(8.dp))
-        Button(onClick = { start(null) }, modifier = Modifier.fillMaxWidth().height(64.dp)) {
+
+        // Cartão do atleta: um degradê leve (desenhado uma vez, não pesa).
+        Card(
+            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Row(
+                Modifier.fillMaxWidth()
+                    .background(Brush.linearGradient(listOf(cs.primaryContainer, cs.surfaceContainer)))
+                    .padding(horizontal = 18.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                StatBlock("FTP", "${profile.ftp}", "W")
+                StatBlock("W/kg", if (profile.weightKg > 0) fmt1(profile.ftp / profile.weightKg) else "--", "")
+                StatBlock("Sensores", "${sensors.size}", "")
+            }
+        }
+
+        Spacer(Modifier.height(4.dp))
+        Button(
+            onClick = { start(null) },
+            modifier = Modifier.fillMaxWidth().height(68.dp),
+            shape = MaterialTheme.shapes.large,
+        ) {
             Icon(Icons.Filled.PedalBike, null)
             Text("  Pedal livre", style = MaterialTheme.typography.titleMedium)
         }
-        OutlinedButton(onClick = { nav.navigate("workouts") }, modifier = Modifier.fillMaxWidth().height(64.dp)) {
+        FilledTonalButton(
+            onClick = { nav.navigate("workouts") },
+            modifier = Modifier.fillMaxWidth().height(68.dp),
+            shape = MaterialTheme.shapes.large,
+        ) {
             Icon(Icons.Filled.FitnessCenter, null)
             Text("  Treino por zonas", style = MaterialTheme.typography.titleMedium)
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             HomeTile("Sensores", Icons.Filled.Bluetooth, Modifier.weight(1f)) { nav.navigate("sensors") }
             HomeTile("Histórico", Icons.Filled.History, Modifier.weight(1f)) { nav.navigate("history") }
@@ -104,12 +133,24 @@ fun HomeScreen(app: GpsCiclismoApp, nav: NavController) {
 }
 
 @Composable
+private fun StatBlock(label: String, value: String, unit: String) {
+    Column {
+        Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(value, fontSize = 30.sp, fontWeight = FontWeight.Bold, style = Tabular)
+            if (unit.isNotEmpty()) Text(" $unit", style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 5.dp))
+        }
+    }
+}
+
+@Composable
 private fun HomeTile(label: String, icon: ImageVector, modifier: Modifier, onClick: () -> Unit) {
-    Card(onClick = onClick, modifier = modifier) {
-        Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(icon, null, Modifier.size(32.dp))
-            Spacer(Modifier.height(6.dp))
-            Text(label)
+    Card(onClick = onClick, modifier = modifier, colors = cardColors()) {
+        Column(Modifier.fillMaxWidth().padding(vertical = 18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(icon, null, Modifier.size(28.dp), tint = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.height(8.dp))
+            Text(label, style = MaterialTheme.typography.labelLarge)
         }
     }
 }
