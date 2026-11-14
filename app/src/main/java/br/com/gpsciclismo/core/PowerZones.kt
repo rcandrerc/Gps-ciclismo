@@ -57,6 +57,16 @@ sealed class PowerTarget {
         Free -> null
     }
 
+    /**
+     * Watts que o rolo segura no modo ERG. Zona vira um ponto dentro dela
+     * (perto do meio; Z1 e Z7 têm faixas largas demais para usar o meio).
+     */
+    fun ergWatts(ftp: Int): Int? = when (this) {
+        is Watts -> watts
+        is Zone -> (ftp * ERG_ZONE_PCT[(zone - 1).coerceIn(0, 6)]).toInt()
+        Free -> null
+    }
+
     fun spoken(): String = when (this) {
         is Watts -> "$watts watts"
         is Zone -> "zona $zone"
@@ -69,6 +79,9 @@ sealed class PowerTarget {
         Free -> "Livre"
     }
 }
+
+/** % do FTP usado no ERG para cada zona (Z1 a Z7). */
+private val ERG_ZONE_PCT = doubleArrayOf(0.50, 0.65, 0.83, 0.98, 1.13, 1.35, 1.50)
 
 @Serializable
 data class WorkoutBlock(val durationSec: Int, val target: PowerTarget)

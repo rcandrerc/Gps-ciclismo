@@ -29,7 +29,17 @@ data class CoachSettings(
     val powerAlertSec: Int = 5,
 )
 
-enum class SensorKind(val label: String) { HEART_RATE("Frequência cardíaca"), CADENCE("Cadência"), POWER("Potência") }
+enum class SensorKind(val label: String) {
+    HEART_RATE("Frequência cardíaca"), CADENCE("Cadência"), POWER("Potência"),
+    /** Rolo smart (FTMS): velocidade no indoor e controle da carga no ERG. */
+    TRAINER("Rolo smart"),
+}
+
+/** Escolha feita antes de iniciar: onde vai pedalar e se o app controla o rolo. */
+data class RideSetup(val indoor: Boolean = false, val erg: Boolean = false) {
+    /** ERG só vale no indoor. */
+    val ergActive: Boolean get() = indoor && erg
+}
 
 data class SavedSensor(val kind: SensorKind, val address: String, val name: String)
 
@@ -94,6 +104,17 @@ class Prefs(context: Context) {
     fun removeSensor(kind: SensorKind) {
         sp.edit().remove("sensor_${kind.name}_addr").remove("sensor_${kind.name}_name").apply()
         _sensors.value = readSensors()
+    }
+
+    private val _rideSetup = MutableStateFlow(
+        RideSetup(indoor = sp.getBoolean("rideIndoor", false), erg = sp.getBoolean("rideErg", false))
+    )
+    /** Última escolha Indoor/Outdoor e ERG (fica marcada para o próximo treino). */
+    val rideSetup: StateFlow<RideSetup> = _rideSetup.asStateFlow()
+
+    fun saveRideSetup(s: RideSetup) {
+        sp.edit().putBoolean("rideIndoor", s.indoor).putBoolean("rideErg", s.erg).apply()
+        _rideSetup.value = s
     }
 
     private val _dashboard = MutableStateFlow(DashboardLayout.decode(sp.getString("dashboard", null)))

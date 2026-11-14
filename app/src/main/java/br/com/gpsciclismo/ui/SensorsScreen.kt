@@ -71,6 +71,7 @@ fun SensorsScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
                     SensorKind.HEART_RATE -> readings.heartRateNow(now)?.let { "$it bpm" }
                     SensorKind.CADENCE -> readings.cadenceNow(now)?.let { "$it rpm" }
                     SensorKind.POWER -> readings.powerNow(now)?.let { "$it W" }
+                    SensorKind.TRAINER -> readings.trainerSpeedNow(now)?.let { "${fmt1(it)} km/h" }
                 }
                 Card {
                     Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {

@@ -23,6 +23,8 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import br.com.gpsciclismo.core.BleParsers
 import br.com.gpsciclismo.core.CadenceCalculator
+import br.com.gpsciclismo.core.Ftms
+import br.com.gpsciclismo.core.TrainerCommand
 import br.com.gpsciclismo.data.Prefs
 import br.com.gpsciclismo.data.SensorKind
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,16 +41,23 @@ data class SensorReadings(
     val powerAt: Long = 0,
     val cadence: Int? = null,
     val cadenceAt: Long = 0,
+    /** Velocidade calculada pelo rolo smart (usada no indoor). */
+    val trainerSpeedKmh: Double? = null,
+    val trainerSpeedAt: Long = 0,
 ) {
     private fun fresh(at: Long, now: Long) = now - at < STALE_MS
     fun heartRateNow(now: Long) = heartRate.takeIf { fresh(heartRateAt, now) }
     fun powerNow(now: Long) = power.takeIf { fresh(powerAt, now) }
     fun cadenceNow(now: Long) = cadence.takeIf { fresh(cadenceAt, now) }
+    fun trainerSpeedNow(now: Long) = trainerSpeedKmh.takeIf { fresh(trainerSpeedAt, now) }
 
     companion object { const val STALE_MS = 5000L }
 }
 
 enum class LinkState { DISCONNECTED, CONNECTING, CONNECTED }
+
+/** Situação do controle do rolo no modo ERG. */
+enum class TrainerControl { OFF, WAITING, OK, DENIED }
 
 data class FoundDevice(val address: String, val name: String, val kinds: Set<SensorKind>, val rssi: Int)
 
@@ -67,6 +76,9 @@ class BleSensorManager(private val context: Context, private val prefs: Prefs) {
         val CSC_MEASUREMENT: UUID = uuid16(0x2A5B)
         val CP_SERVICE: UUID = uuid16(0x1818)
         val CP_MEASUREMENT: UUID = uuid16(0x2A63)
+        val FTMS_SERVICE: UUID = uuid16(0x1826)
+        val FTMS_INDOOR_BIKE: UUID = uuid16(0x2AD2)
+        val FTMS_CONTROL: UUID = uuid16(0x2AD9)
         val CCCD: UUID = uuid16(0x2902)
 
         fun uuid16(v: Int): UUID = UUID.fromString(String.format("0000%04x-0000-1000-8000-00805f9b34fb", v))
@@ -93,7 +105,16 @@ class BleSensorManager(private val context: Context, private val prefs: Prefs) {
     private val _scanning = MutableStateFlow(false)
     val scanning: StateFlow<Boolean> = _scanning.asStateFlow()
 
+    private val _trainer = MutableStateFlow(TrainerControl.OFF)
+    /** Se o rolo aceitou o controle do app (ERG). */
+    val trainer: StateFlow<TrainerControl> = _trainer.asStateFlow()
+
     private val gatts = mutableMapOf<String, BluetoothGatt>()
+    private val callbacks = mutableMapOf<String, GattCallback>()
+    /** Aparelhos que têm o serviço Cycling Power (preferido ao FTMS para potência). */
+    private val hasCyclingPower = mutableSetOf<String>()
+    private var command: TrainerCommand = TrainerCommand.None
+    private var controlGranted = false
     private var active = false
     private val cscCadence = CadenceCalculator()
     private val powerCadence = CadenceCalculator()
@@ -113,6 +134,7 @@ class BleSensorManager(private val context: Context, private val prefs: Prefs) {
                 if (HR_SERVICE in uuids) add(SensorKind.HEART_RATE)
                 if (CSC_SERVICE in uuids) add(SensorKind.CADENCE)
                 if (CP_SERVICE in uuids) { add(SensorKind.POWER); add(SensorKind.CADENCE) }
+                if (FTMS_SERVICE in uuids) { add(SensorKind.TRAINER); add(SensorKind.POWER); add(SensorKind.CADENCE) }
             }
             if (kinds.isEmpty()) return
             val name = result.scanRecord?.deviceName ?: result.device.name ?: result.device.address
@@ -130,7 +152,7 @@ class BleSensorManager(private val context: Context, private val prefs: Prefs) {
         if (!hasPermissions() || !isBluetoothOn() || _scanning.value) return
         val scanner = adapter?.bluetoothLeScanner ?: return
         _found.value = emptyList()
-        val filters = listOf(HR_SERVICE, CSC_SERVICE, CP_SERVICE).map {
+        val filters = listOf(HR_SERVICE, CSC_SERVICE, CP_SERVICE, FTMS_SERVICE).map {
             ScanFilter.Builder().setServiceUuid(ParcelUuid(it)).build()
         }
         val settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
@@ -159,6 +181,11 @@ class BleSensorManager(private val context: Context, private val prefs: Prefs) {
         main.removeCallbacksAndMessages(null)
         gatts.values.forEach { runCatching { it.disconnect(); it.close() } }
         gatts.clear()
+        callbacks.clear()
+        hasCyclingPower.clear()
+        command = TrainerCommand.None
+        controlGranted = false
+        _trainer.value = TrainerControl.OFF
         _links.value = emptyMap()
         _readings.value = SensorReadings()
         cscCadence.reset(); powerCadence.reset()
@@ -170,6 +197,7 @@ class BleSensorManager(private val context: Context, private val prefs: Prefs) {
         val wanted = prefs.sensors.value.values.map { it.address }.toSet()
         (gatts.keys - wanted).forEach { addr ->
             gatts.remove(addr)?.let { runCatching { it.disconnect(); it.close() } }
+            callbacks.remove(addr)
             _links.update { it - addr }
         }
         (wanted - gatts.keys).forEach { connect(it) }
@@ -179,7 +207,9 @@ class BleSensorManager(private val context: Context, private val prefs: Prefs) {
         if (gatts.containsKey(address)) return
         val device: BluetoothDevice = runCatching { adapter?.getRemoteDevice(address) }.getOrNull() ?: return
         setLink(address, LinkState.CONNECTING)
-        val gatt = device.connectGatt(context, false, GattCallback(address), BluetoothDevice.TRANSPORT_LE)
+        val cb = GattCallback(address)
+        callbacks[address] = cb
+        val gatt = device.connectGatt(context, false, cb, BluetoothDevice.TRANSPORT_LE)
         if (gatt != null) gatts[address] = gatt
     }
 
@@ -193,8 +223,17 @@ class BleSensorManager(private val context: Context, private val prefs: Prefs) {
 
     private fun setLink(address: String, state: LinkState) = _links.update { it + (address to state) }
 
+    /** Operações GATT têm de ir uma de cada vez; esta fila garante isso. */
+    private sealed class GattOp {
+        class Subscribe(val ch: BluetoothGattCharacteristic, val indicate: Boolean) : GattOp()
+        class Write(val ch: BluetoothGattCharacteristic, val value: ByteArray) : GattOp()
+    }
+
     private inner class GattCallback(private val address: String) : BluetoothGattCallback() {
-        private val pending = ArrayDeque<BluetoothGattCharacteristic>()
+        private val queue = ArrayDeque<GattOp>()
+        private var busy: GattOp? = null
+        var gatt: BluetoothGatt? = null; private set
+        var control: BluetoothGattCharacteristic? = null; private set
 
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
             main.post {
@@ -203,6 +242,11 @@ class BleSensorManager(private val context: Context, private val prefs: Prefs) {
                     gatt.discoverServices()
                 } else {
                     setLink(address, LinkState.DISCONNECTED)
+                    queue.clear(); busy = null; control = null; this.gatt = null
+                    if (isTrainer(address)) {
+                        controlGranted = false
+                        if (command != TrainerCommand.None) _trainer.value = TrainerControl.WAITING
+                    }
                     if (gatts[address] === gatt) gatts.remove(address)
                     runCatching { gatt.close() }
                     scheduleReconnect(address)
@@ -212,34 +256,80 @@ class BleSensorManager(private val context: Context, private val prefs: Prefs) {
 
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
             main.post {
-                pending.clear()
+                this.gatt = gatt
+                queue.clear(); busy = null
+                if (gatt.getService(CP_SERVICE) != null) hasCyclingPower += address else hasCyclingPower -= address
                 listOf(
                     HR_SERVICE to HR_MEASUREMENT,
                     CSC_SERVICE to CSC_MEASUREMENT,
                     CP_SERVICE to CP_MEASUREMENT,
-                ).forEach { (s, c) -> gatt.getService(s)?.getCharacteristic(c)?.let { pending.addLast(it) } }
-                enableNext(gatt)
+                    FTMS_SERVICE to FTMS_INDOOR_BIKE,
+                ).forEach { (s, c) -> gatt.getService(s)?.getCharacteristic(c)?.let { queue.addLast(GattOp.Subscribe(it, false)) } }
+                control = gatt.getService(FTMS_SERVICE)?.getCharacteristic(FTMS_CONTROL)
+                if (isTrainer(address)) control?.let { queue.addLast(GattOp.Subscribe(it, true)) }
+                runNext()
+                if (isTrainer(address) && command != TrainerCommand.None) takeControl()
             }
         }
 
-        private fun enableNext(gatt: BluetoothGatt) {
-            val ch = pending.removeFirstOrNull() ?: return
-            gatt.setCharacteristicNotification(ch, true)
-            val desc = ch.getDescriptor(CCCD)
-            if (desc == null) { enableNext(gatt); return }
-            val value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                gatt.writeDescriptor(desc, value)
-            } else {
-                @Suppress("DEPRECATION")
-                desc.value = value
-                @Suppress("DEPRECATION")
-                gatt.writeDescriptor(desc)
+        /** Pede o controle do rolo; a resposta chega em [onControlResponse]. */
+        fun takeControl() {
+            val ch = control ?: return
+            controlGranted = false
+            _trainer.value = TrainerControl.WAITING
+            enqueue(GattOp.Write(ch, Ftms.requestControl()))
+        }
+
+        fun write(value: ByteArray) { control?.let { enqueue(GattOp.Write(it, value)) } }
+
+        private fun enqueue(op: GattOp) {
+            queue.addLast(op)
+            if (busy == null) runNext()
+        }
+
+        private fun runNext() {
+            val g = gatt ?: return
+            val op = queue.removeFirstOrNull() ?: run { busy = null; return }
+            busy = op
+            // Se o aparelho não responder, segue a fila mesmo assim.
+            main.postDelayed({ if (busy === op) runNext() }, 3000)
+            when (op) {
+                is GattOp.Subscribe -> {
+                    g.setCharacteristicNotification(op.ch, true)
+                    val desc = op.ch.getDescriptor(CCCD) ?: run { runNext(); return }
+                    val value = if (op.indicate) BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
+                    else BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        g.writeDescriptor(desc, value)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        desc.value = value
+                        @Suppress("DEPRECATION")
+                        g.writeDescriptor(desc)
+                    }
+                }
+                is GattOp.Write -> {
+                    val type = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        g.writeCharacteristic(op.ch, op.value, type)
+                    } else {
+                        @Suppress("DEPRECATION")
+                        op.ch.writeType = type
+                        @Suppress("DEPRECATION")
+                        op.ch.value = op.value
+                        @Suppress("DEPRECATION")
+                        g.writeCharacteristic(op.ch)
+                    }
+                }
             }
         }
 
         override fun onDescriptorWrite(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
-            main.post { enableNext(gatt) }
+            main.post { runNext() }
+        }
+
+        override fun onCharacteristicWrite(gatt: BluetoothGatt, ch: BluetoothGattCharacteristic, status: Int) {
+            main.post { runNext() }
         }
 
         override fun onCharacteristicChanged(gatt: BluetoothGatt, ch: BluetoothGattCharacteristic, value: ByteArray) {
@@ -251,6 +341,67 @@ class BleSensorManager(private val context: Context, private val prefs: Prefs) {
             @Suppress("DEPRECATION")
             val v = ch.value ?: return
             handle(address, ch.uuid, v)
+        }
+    }
+
+    // ---------------- Rolo (FTMS / ERG) ----------------
+
+    private fun isTrainer(address: String) = prefs.sensors.value[SensorKind.TRAINER]?.address == address
+
+    private fun trainerCallback(): GattCallback? =
+        prefs.sensors.value[SensorKind.TRAINER]?.address?.let { callbacks[it] }
+
+    fun hasTrainer(): Boolean = prefs.sensors.value[SensorKind.TRAINER] != null
+
+    /**
+     * Diz ao rolo o que fazer. Só manda algo quando muda; se o rolo cair,
+     * pede o controle de novo e reaplica ao reconectar.
+     */
+    fun setTrainerCommand(cmd: TrainerCommand) {
+        main.post {
+            if (cmd == command) return@post
+            val wasNone = command == TrainerCommand.None
+            command = cmd
+            val cb = trainerCallback()?.takeIf { it.gatt != null }
+            when {
+                cmd == TrainerCommand.None -> {
+                    // Devolve o rolo ao modo normal.
+                    if (controlGranted) cb?.write(Ftms.reset())
+                    controlGranted = false
+                    _trainer.value = TrainerControl.OFF
+                }
+                cb == null -> _trainer.value = TrainerControl.WAITING
+                wasNone || !controlGranted -> cb.takeControl()
+                else -> sendCommand(cb)
+            }
+        }
+    }
+
+    private fun sendCommand(cb: GattCallback) {
+        when (val c = command) {
+            is TrainerCommand.Erg -> cb.write(Ftms.setTargetPower(c.watts))
+            TrainerCommand.Flat -> cb.write(Ftms.flatRoad())
+            TrainerCommand.None -> Unit
+        }
+    }
+
+    private fun onControlResponse(address: String, data: ByteArray) {
+        val r = Ftms.response(data) ?: return
+        val cb = callbacks[address] ?: return
+        when (r.requestOp) {
+            Ftms.OP_REQUEST_CONTROL -> {
+                if (r.ok) {
+                    controlGranted = true
+                    _trainer.value = TrainerControl.OK
+                    cb.write(Ftms.startOrResume())
+                    sendCommand(cb)
+                } else {
+                    Log.w(TAG, "rolo recusou o controle: ${r.result}")
+                    _trainer.value = TrainerControl.DENIED
+                }
+            }
+            Ftms.OP_SET_TARGET_POWER, Ftms.OP_SIMULATION ->
+                if (!r.ok) Log.w(TAG, "rolo recusou o comando ${r.requestOp}: ${r.result}")
         }
     }
 
@@ -276,6 +427,17 @@ class BleSensorManager(private val context: Context, private val prefs: Prefs) {
                     _readings.update { it.copy(cadence = rpm, cadenceAt = now) }
                 }
             }
+            FTMS_INDOOR_BIKE -> Ftms.indoorBikeData(data)?.let { d ->
+                if (SensorKind.TRAINER in roles && d.speedKmh != null) {
+                    _readings.update { it.copy(trainerSpeedKmh = d.speedKmh, trainerSpeedAt = now) }
+                }
+                // Se o mesmo aparelho tem Cycling Power, a potência/cadência já vem de lá.
+                if (address !in hasCyclingPower) {
+                    if (SensorKind.POWER in roles && d.power != null) _readings.update { it.copy(power = d.power, powerAt = now) }
+                    if (SensorKind.CADENCE in roles && d.cadence != null) _readings.update { it.copy(cadence = d.cadence, cadenceAt = now) }
+                }
+            }
+            FTMS_CONTROL -> main.post { onControlResponse(address, data) }
         }
     }
 }
