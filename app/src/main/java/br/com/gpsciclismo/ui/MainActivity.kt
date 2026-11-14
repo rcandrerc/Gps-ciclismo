@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
                             "workout/{id}",
                             arguments = listOf(navArgument("id") { type = NavType.LongType }),
                         ) { WorkoutEditorScreen(app, it.arguments?.getLong("id") ?: 0L) { nav.popBackStack() } }
+                        composable("calendar") { CalendarScreen(app, nav) }
                         composable("live") { LiveRideScreen(app, nav) }
                         composable("history") { HistoryScreen(app, nav) }
                         composable(

@@ -1,0 +1,94 @@
+{
+  "name": "Volta aos treinos (FTP)",
+  "updated": "2026-11-14",
+  "days": [
+    {
+      "date": "2026-11-14",
+      "title": "S1D1 Retorno Z2 com ativações",
+      "where": "rolo",
+      "notes": "Primeiro treino da volta: Z2 confortável com 3 ativações curtas de 1 min a 200 W.",
+      "workout": {
+        "name": "S1D1 Retorno Z2 com ativações",
+        "blocks": [
+          {
+            "durationSec": 300,
+            "target": {
+              "type": "zone",
+              "zone": 1
+            }
+          },
+          {
+            "durationSec": 300,
+            "target": {
+              "type": "zone",
+              "zone": 2
+            }
+          },
+          {
+            "durationSec": 1800,
+            "target": {
+              "type": "watts",
+              "watts": 145
+            }
+          },
+          {
+            "durationSec": 60,
+            "target": {
+              "type": "watts",
+              "watts": 200
+            }
+          },
+          {
+            "durationSec": 120,
+            "target": {
+              "type": "zone",
+              "zone": 1
+            }
+          },
+          {
+            "durationSec": 60,
+            "target": {
+              "type": "watts",
+              "watts": 200
+            }
+          },
+          {
+            "durationSec": 120,
+            "target": {
+              "type": "zone",
+              "zone": 1
+            }
+          },
+          {
+            "durationSec": 60,
+            "target": {
+              "type": "watts",
+              "watts": 200
+            }
+          },
+          {
+            "durationSec": 120,
+            "target": {
+              "type": "zone",
+              "zone": 1
+            }
+          },
+          {
+            "durationSec": 600,
+            "target": {
+              "type": "watts",
+              "watts": 145
+            }
+          },
+          {
+            "durationSec": 300,
+            "target": {
+              "type": "zone",
+              "zone": 1
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
