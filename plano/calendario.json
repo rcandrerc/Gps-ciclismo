@@ -1,14 +1,14 @@
 {
- "name": "Volta ao FTP - mês 1",
+ "name": "Volta ao FTP - mês 1 (4x40 min, foco FTP)",
  "updated": "2026-11-14",
  "days": [
   {
    "date": "2026-11-14",
-   "title": "S1D1 Retorno Z2 com ativações",
+   "title": "Z2 resistência + ativações (retorno)",
    "where": "rolo",
-   "notes": "Primeiro treino de volta. Leve, cadência confortável.",
+   "notes": "Primeiro treino de volta (feito).",
    "workout": {
-    "name": "S1D1 Retorno Z2 com ativações",
+    "name": "Z2 resistência + ativações (retorno)",
     "blocks": [
      {
       "durationSec": 300,
@@ -92,14 +92,14 @@
   },
   {
    "date": "2026-11-15",
-   "title": "S1 Z2 leve 45 min",
+   "title": "Recuperação Z2 leve 40 min",
    "where": "rolo",
-   "notes": "Bem leve, só somar volume.",
+   "notes": "Z2 contínuo, cadência solta. Recupera do treino de sábado e mantém a base aeróbica que sustenta o FTP.",
    "workout": {
-    "name": "S1 Z2 leve 45 min",
+    "name": "Recuperação Z2 leve 40 min",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -108,19 +108,19 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
+       "type": "watts",
+       "watts": 145
       }
      },
      {
-      "durationSec": 1800,
+      "durationSec": 1680,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -135,14 +135,14 @@
   },
   {
    "date": "2026-11-17",
-   "title": "S1 Z2 + cadência",
+   "title": "Sweet spot 3x6 min a 185 W",
    "where": "rolo",
-   "notes": "Nos blocos de 1 min, mesma potência mas cadência 100-105 rpm.",
+   "notes": "Readaptação: forte mas sustentável, dá pra falar frases curtas. Recupera 3 min em Z2.",
    "workout": {
-    "name": "S1 Z2 + cadência",
+    "name": "Sweet spot 3x6 min a 185 W",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -151,22 +151,8 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
-      }
-     },
-     {
-      "durationSec": 900,
-      "target": {
        "type": "watts",
        "watts": 145
-      }
-     },
-     {
-      "durationSec": 60,
-      "target": {
-       "type": "watts",
-       "watts": 155
       }
      },
      {
@@ -177,10 +163,38 @@
       }
      },
      {
-      "durationSec": 60,
+      "durationSec": 360,
       "target": {
        "type": "watts",
-       "watts": 155
+       "watts": 185
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 360,
+      "target": {
+       "type": "watts",
+       "watts": 185
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 360,
+      "target": {
+       "type": "watts",
+       "watts": 185
       }
      },
      {
@@ -191,56 +205,7 @@
       }
      },
      {
-      "durationSec": 60,
-      "target": {
-       "type": "watts",
-       "watts": 155
-      }
-     },
-     {
-      "durationSec": 120,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 60,
-      "target": {
-       "type": "watts",
-       "watts": 155
-      }
-     },
-     {
-      "durationSec": 120,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 60,
-      "target": {
-       "type": "watts",
-       "watts": 155
-      }
-     },
-     {
-      "durationSec": 120,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 900,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 300,
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -255,14 +220,14 @@
   },
   {
    "date": "2026-11-19",
-   "title": "S1 Z2 + 4x3 min tempo",
+   "title": "Sweet spot 2x10 min a 185 W",
    "where": "rolo",
-   "notes": "Tempo a 170 W, respiração controlada, nada de sofrer.",
+   "notes": "Blocos mais longos no mesmo ritmo. Recupera 4 min em Z2.",
    "workout": {
-    "name": "S1 Z2 + 4x3 min tempo",
+    "name": "Sweet spot 2x10 min a 185 W",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -271,82 +236,47 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 145
       }
      },
      {
       "durationSec": 600,
       "target": {
        "type": "watts",
-       "watts": 145
+       "watts": 185
       }
      },
      {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 170
-      }
-     },
-     {
-      "durationSec": 180,
+      "durationSec": 240,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 180,
+      "durationSec": 600,
       "target": {
        "type": "watts",
-       "watts": 170
+       "watts": 185
       }
      },
      {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 170
-      }
-     },
-     {
-      "durationSec": 180,
+      "durationSec": 120,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 170
-      }
-     },
-     {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 780,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 300,
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -361,14 +291,14 @@
   },
   {
    "date": "2026-11-21",
-   "title": "S1 Longo Z2 1h30",
-   "where": "rua",
-   "notes": "Rua: segura Z2, nas subidas não passe de ~190 W.",
+   "title": "Limiar 3x5 min a 200 W",
+   "where": "rolo",
+   "notes": "Primeiro contato com o limiar (~95% do FTP). Recupera 3 min em Z2.",
    "workout": {
-    "name": "S1 Longo Z2 1h30",
+    "name": "Limiar 3x5 min a 200 W",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -377,12 +307,12 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
+       "type": "watts",
+       "watts": 145
       }
      },
      {
-      "durationSec": 4500,
+      "durationSec": 210,
       "target": {
        "type": "watts",
        "watts": 145
@@ -390,6 +320,48 @@
      },
      {
       "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 200
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 200
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 200
+      }
+     },
+     {
+      "durationSec": 210,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -400,14 +372,14 @@
   },
   {
    "date": "2026-11-22",
-   "title": "S1 Z2 leve 45 min",
+   "title": "Recuperação Z2 leve 40 min",
    "where": "rolo",
-   "notes": "Recuperação ativa.",
+   "notes": "Z2 contínuo, cadência solta. Recupera do treino de sábado e mantém a base aeróbica que sustenta o FTP.",
    "workout": {
-    "name": "S1 Z2 leve 45 min",
+    "name": "Recuperação Z2 leve 40 min",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -416,19 +388,19 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
+       "type": "watts",
+       "watts": 145
       }
      },
      {
-      "durationSec": 1800,
+      "durationSec": 1680,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -443,14 +415,14 @@
   },
   {
    "date": "2026-11-24",
-   "title": "S2 Tempo 3x10 min",
+   "title": "Sweet spot 3x7 min a 190 W",
    "where": "rolo",
-   "notes": "Tempo a 170 W, cadência 85-95.",
+   "notes": "Recupera 3 min em Z2.",
    "workout": {
-    "name": "S2 Tempo 3x10 min",
+    "name": "Sweet spot 3x7 min a 190 W",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -459,61 +431,54 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
-      }
-     },
-     {
-      "durationSec": 300,
-      "target": {
        "type": "watts",
        "watts": 145
-      }
-     },
-     {
-      "durationSec": 600,
-      "target": {
-       "type": "watts",
-       "watts": 170
-      }
-     },
-     {
-      "durationSec": 240,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 600,
-      "target": {
-       "type": "watts",
-       "watts": 170
-      }
-     },
-     {
-      "durationSec": 240,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 600,
-      "target": {
-       "type": "watts",
-       "watts": 170
       }
      },
      {
       "durationSec": 420,
       "target": {
        "type": "watts",
+       "watts": 190
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 420,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 420,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -528,14 +493,14 @@
   },
   {
    "date": "2026-11-26",
-   "title": "S2 4x6 min a 180 W + 3x1 min",
+   "title": "VO2 máx 5x2 min a 240 W",
    "where": "rolo",
-   "notes": "Primeiro gostinho de sweet spot baixo. Os de 1 min a 220 W com cadência alta.",
+   "notes": "Curto e duro, sobe o teto do FTP. Recupera 2 min em Z2. Se não fechar o 5º, pare no 4º.",
    "workout": {
-    "name": "S2 4x6 min a 180 W + 3x1 min",
+    "name": "VO2 máx 5x2 min a 240 W",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -544,8 +509,8 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
+       "type": "watts",
+       "watts": 145
       }
      },
      {
@@ -553,115 +518,80 @@
       "target": {
        "type": "watts",
        "watts": 145
-      }
-     },
-     {
-      "durationSec": 360,
-      "target": {
-       "type": "watts",
-       "watts": 180
-      }
-     },
-     {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 360,
-      "target": {
-       "type": "watts",
-       "watts": 180
-      }
-     },
-     {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 360,
-      "target": {
-       "type": "watts",
-       "watts": 180
-      }
-     },
-     {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 360,
-      "target": {
-       "type": "watts",
-       "watts": 180
-      }
-     },
-     {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 60,
-      "target": {
-       "type": "watts",
-       "watts": 220
       }
      },
      {
       "durationSec": 120,
       "target": {
-       "type": "zone",
-       "zone": 1
-      }
-     },
-     {
-      "durationSec": 60,
-      "target": {
        "type": "watts",
-       "watts": 220
+       "watts": 240
       }
      },
      {
       "durationSec": 120,
-      "target": {
-       "type": "zone",
-       "zone": 1
-      }
-     },
-     {
-      "durationSec": 60,
-      "target": {
-       "type": "watts",
-       "watts": 220
-      }
-     },
-     {
-      "durationSec": 120,
-      "target": {
-       "type": "zone",
-       "zone": 1
-      }
-     },
-     {
-      "durationSec": 180,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      }
+     },
+     {
       "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -676,14 +606,14 @@
   },
   {
    "date": "2026-11-28",
-   "title": "S2 Longo 1h30 com 2x15 tempo",
-   "where": "rua",
-   "notes": "Rua: Z2 com dois blocos de 15 min em tempo (~170 W), de preferência em reta ou subida leve.",
+   "title": "Over-under 3x6 min (190/220 W)",
+   "where": "rolo",
+   "notes": "Cada bloco: 2 min a 190 W, 1 min a 220 W, repete. Ensina a limpar o lactato acima do limiar. Recupera 3 min em Z2.",
    "workout": {
-    "name": "S2 Longo 1h30 com 2x15 tempo",
+    "name": "Over-under 3x6 min (190/220 W)",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -692,47 +622,124 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
+       "type": "watts",
+       "watts": 145
       }
      },
      {
-      "durationSec": 1200,
+      "durationSec": 120,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 900,
+      "durationSec": 120,
       "target": {
        "type": "watts",
-       "watts": 170
+       "watts": 190
       }
      },
      {
-      "durationSec": 600,
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 220
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 220
+      }
+     },
+     {
+      "durationSec": 180,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 900,
+      "durationSec": 120,
       "target": {
        "type": "watts",
-       "watts": 170
+       "watts": 190
       }
      },
      {
-      "durationSec": 900,
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 220
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 220
+      }
+     },
+     {
+      "durationSec": 180,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 220
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 220
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -743,14 +750,14 @@
   },
   {
    "date": "2026-11-29",
-   "title": "S2 Z2 leve 50 min",
+   "title": "Recuperação Z2 leve 40 min",
    "where": "rolo",
-   "notes": "Recuperação ativa.",
+   "notes": "Z2 contínuo, cadência solta. Recupera do treino de sábado e mantém a base aeróbica que sustenta o FTP.",
    "workout": {
-    "name": "S2 Z2 leve 50 min",
+    "name": "Recuperação Z2 leve 40 min",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -759,19 +766,19 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
+       "type": "watts",
+       "watts": 145
       }
      },
      {
-      "durationSec": 2100,
+      "durationSec": 1680,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -786,14 +793,14 @@
   },
   {
    "date": "2026-12-01",
-   "title": "S3 Sweet spot 3x8 min",
+   "title": "Sweet spot 2x12 min a 195 W",
    "where": "rolo",
-   "notes": "Sweet spot a 188 W. Forte mas sustentável, deve dar pra falar frases curtas.",
+   "notes": "Se o 1º bloco pesar demais, baixe para 188 W. Recupera 4 min em Z2.",
    "workout": {
-    "name": "S3 Sweet spot 3x8 min",
+    "name": "Sweet spot 2x12 min a 195 W",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -802,22 +809,15 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
-      }
-     },
-     {
-      "durationSec": 480,
-      "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 480,
+      "durationSec": 720,
       "target": {
        "type": "watts",
-       "watts": 188
+       "watts": 195
       }
      },
      {
@@ -828,35 +828,14 @@
       }
      },
      {
-      "durationSec": 480,
+      "durationSec": 720,
       "target": {
        "type": "watts",
-       "watts": 188
+       "watts": 195
       }
      },
      {
       "durationSec": 240,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 480,
-      "target": {
-       "type": "watts",
-       "watts": 188
-      }
-     },
-     {
-      "durationSec": 660,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 300,
       "target": {
        "type": "zone",
        "zone": 1
@@ -871,14 +850,14 @@
   },
   {
    "date": "2026-12-03",
-   "title": "S3 Sweet spot 3x10 min",
+   "title": "VO2 máx 5x3 min a 235 W",
    "where": "rolo",
-   "notes": "192 W. Se o 1º bloco estiver muito pesado, baixe para 185 W.",
+   "notes": "Recupera 3 min em Z2. Se não fechar o 5º, pare no 4º.",
    "workout": {
-    "name": "S3 Sweet spot 3x10 min",
+    "name": "VO2 máx 5x3 min a 235 W",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -887,61 +866,82 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
+       "type": "watts",
+       "watts": 145
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      }
+     },
+     {
+      "durationSec": 180,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 600,
+      "durationSec": 180,
       "target": {
        "type": "watts",
-       "watts": 192
+       "watts": 235
       }
      },
      {
-      "durationSec": 300,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 600,
-      "target": {
-       "type": "watts",
-       "watts": 192
-      }
-     },
-     {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 600,
+      "durationSec": 180,
       "target": {
        "type": "watts",
-       "watts": 192
+       "watts": 235
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -956,14 +956,14 @@
   },
   {
    "date": "2026-12-05",
-   "title": "S3 Longo 1h45 com 2x15 sweet spot",
-   "where": "rua",
-   "notes": "Rua: Z2 com dois blocos de 15 min a ~185 W.",
+   "title": "Limiar 3x7 min a 205 W",
+   "where": "rolo",
+   "notes": "~98% do FTP. Recupera 2,5 min em Z2.",
    "workout": {
-    "name": "S3 Longo 1h45 com 2x15 sweet spot",
+    "name": "Limiar 3x7 min a 205 W",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -972,47 +972,61 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
+       "type": "watts",
+       "watts": 145
       }
      },
      {
-      "durationSec": 1500,
+      "durationSec": 60,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 900,
+      "durationSec": 420,
       "target": {
        "type": "watts",
-       "watts": 185
+       "watts": 205
       }
      },
      {
-      "durationSec": 600,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 900,
-      "target": {
-       "type": "watts",
-       "watts": 185
-      }
-     },
-     {
-      "durationSec": 1500,
+      "durationSec": 150,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 420,
+      "target": {
+       "type": "watts",
+       "watts": 205
+      }
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 420,
+      "target": {
+       "type": "watts",
+       "watts": 205
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -1023,14 +1037,14 @@
   },
   {
    "date": "2026-12-06",
-   "title": "S3 Z2 1h",
+   "title": "Recuperação Z2 leve 40 min",
    "where": "rolo",
-   "notes": "Z2 contínuo, cadência solta.",
+   "notes": "Z2 contínuo, cadência solta. Recupera do treino de sábado e mantém a base aeróbica que sustenta o FTP.",
    "workout": {
-    "name": "S3 Z2 1h",
+    "name": "Recuperação Z2 leve 40 min",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -1039,19 +1053,19 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
+       "type": "watts",
+       "watts": 145
       }
      },
      {
-      "durationSec": 2700,
+      "durationSec": 1680,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -1066,14 +1080,14 @@
   },
   {
    "date": "2026-12-08",
-   "title": "S4 Descarga Z2 + 3x2 min",
+   "title": "Descarga 2x6 min a 190 W (semana leve)",
    "where": "rolo",
-   "notes": "Semana leve para chegar descansado no teste.",
+   "notes": "Semana leve para chegar descansado no teste. Recupera 4 min em Z2.",
    "workout": {
-    "name": "S4 Descarga Z2 + 3x2 min",
+    "name": "Descarga 2x6 min a 190 W (semana leve)",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -1082,68 +1096,47 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
+       "type": "watts",
+       "watts": 145
       }
      },
      {
-      "durationSec": 900,
+      "durationSec": 360,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 120,
+      "durationSec": 360,
       "target": {
        "type": "watts",
-       "watts": 200
+       "watts": 190
       }
      },
      {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 120,
-      "target": {
-       "type": "watts",
-       "watts": 200
-      }
-     },
-     {
-      "durationSec": 180,
+      "durationSec": 240,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 120,
+      "durationSec": 360,
       "target": {
        "type": "watts",
-       "watts": 200
+       "watts": 190
       }
      },
      {
-      "durationSec": 180,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 600,
+      "durationSec": 360,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -1158,14 +1151,14 @@
   },
   {
    "date": "2026-12-10",
-   "title": "S4 Ativação pré-teste",
+   "title": "Ativação pré-teste 3x1 min",
    "where": "rolo",
    "notes": "Curto. Os de 1 min a 230 W só para abrir as pernas.",
    "workout": {
-    "name": "S4 Ativação pré-teste",
+    "name": "Ativação pré-teste 3x1 min",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -1174,12 +1167,12 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
+       "type": "watts",
+       "watts": 145
       }
      },
      {
-      "durationSec": 600,
+      "durationSec": 420,
       "target": {
        "type": "watts",
        "watts": 145
@@ -1221,21 +1214,14 @@
       }
      },
      {
-      "durationSec": 180,
+      "durationSec": 420,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 360,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 300,
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -1250,21 +1236,21 @@
   },
   {
    "date": "2026-12-12",
-   "title": "S4 Teste de FTP 20 min",
+   "title": "Teste de FTP 20 min",
    "where": "rolo",
-   "notes": "Protocolo 20 min: aquecimento, 5 min forte para tirar a explosão, recupera, e 20 min no máximo que conseguir manter, saindo comedido (~210-220 W) e acelerando no fim. FTP = 95% da média dos 20 min. Fique em modo livre/resistência, não ERG.",
+   "notes": "Exceção: ~43 min. Aquecimento, 2 tiros curtos, e 20 min no máximo que conseguir manter, saindo comedido (~210-220 W) e acelerando no fim. FTP = 95% da média dos 20 min. Rolo em modo livre, não ERG. Me mande o resultado!",
    "workout": {
-    "name": "S4 Teste de FTP 20 min",
+    "name": "Teste de FTP 20 min",
     "blocks": [
      {
-      "durationSec": 600,
+      "durationSec": 300,
       "target": {
        "type": "zone",
        "zone": 1
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 360,
       "target": {
        "type": "watts",
        "watts": 145
@@ -1292,41 +1278,7 @@
       }
      },
      {
-      "durationSec": 60,
-      "target": {
-       "type": "zone",
-       "zone": 1
-      }
-     },
-     {
-      "durationSec": 60,
-      "target": {
-       "type": "watts",
-       "watts": 230
-      }
-     },
-     {
-      "durationSec": 60,
-      "target": {
-       "type": "zone",
-       "zone": 1
-      }
-     },
-     {
-      "durationSec": 300,
-      "target": {
-       "type": "zone",
-       "zone": 1
-      }
-     },
-     {
-      "durationSec": 300,
-      "target": {
-       "type": "free"
-      }
-     },
-     {
-      "durationSec": 600,
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
@@ -1339,7 +1291,7 @@
       }
      },
      {
-      "durationSec": 600,
+      "durationSec": 300,
       "target": {
        "type": "zone",
        "zone": 1
@@ -1350,14 +1302,14 @@
   },
   {
    "date": "2026-12-13",
-   "title": "S4 Z2 leve 45 min",
+   "title": "Recuperação Z2 leve 40 min",
    "where": "rolo",
-   "notes": "Recuperação. Me mande o resultado do teste pra eu montar o mês 2.",
+   "notes": "Recuperação depois do teste.",
    "workout": {
-    "name": "S4 Z2 leve 45 min",
+    "name": "Recuperação Z2 leve 40 min",
     "blocks": [
      {
-      "durationSec": 300,
+      "durationSec": 180,
       "target": {
        "type": "zone",
        "zone": 1
@@ -1366,19 +1318,19 @@
      {
       "durationSec": 300,
       "target": {
-       "type": "zone",
-       "zone": 2
+       "type": "watts",
+       "watts": 145
       }
      },
      {
-      "durationSec": 1800,
+      "durationSec": 1680,
       "target": {
        "type": "watts",
        "watts": 145
       }
      },
      {
-      "durationSec": 300,
+      "durationSec": 240,
       "target": {
        "type": "zone",
        "zone": 1
