@@ -27,6 +27,8 @@ data class CoachSettings(
     val powerDisplaySec: Int = 3,
     /** Segundos da média usada para decidir os avisos de zona (mais longa = menos aviso falso). */
     val powerAlertSec: Int = 5,
+    /** Usar os Serviços de fala do Google em vez da voz padrão do aparelho. */
+    val googleVoice: Boolean = false,
 )
 
 enum class SensorKind(val label: String) {
@@ -79,6 +81,7 @@ class Prefs(context: Context) {
         speechRate = sp.getFloat("speechRate", 1.05f),
         powerDisplaySec = sp.getInt("powerDisplaySec", 3),
         powerAlertSec = sp.getInt("powerAlertSec", 5),
+        googleVoice = sp.getBoolean("googleVoice", false),
     )
 
     fun saveCoach(c: CoachSettings) {
@@ -86,7 +89,8 @@ class Prefs(context: Context) {
             .putInt("repeatEverySec", c.repeatEverySec).putInt("summaryEveryMin", c.summaryEveryMin)
             .putBoolean("voiceEnabled", c.voiceEnabled)
             .putString("voiceName", c.voiceName).putFloat("speechRate", c.speechRate)
-            .putInt("powerDisplaySec", c.powerDisplaySec).putInt("powerAlertSec", c.powerAlertSec).apply()
+            .putInt("powerDisplaySec", c.powerDisplaySec).putInt("powerAlertSec", c.powerAlertSec)
+            .putBoolean("googleVoice", c.googleVoice).apply()
         _coach.value = c
     }
 

@@ -26,6 +26,8 @@ class VoiceAnnouncer(
     context: Context,
     private val voiceName: String? = null,
     private val rate: Float = 1.05f,
+    /** true = Serviços de fala do Google (se instalado); false = voz padrão do aparelho. */
+    useGoogle: Boolean = false,
     private val onReady: (VoiceAnnouncer) -> Unit = {},
 ) {
     private val audio = context.getSystemService(AudioManager::class.java)
@@ -50,7 +52,7 @@ class VoiceAnnouncer(
     /** Mecanismo em uso (Google, se instalado; senão o padrão do aparelho). */
     var engine: String? = null; private set
 
-    init { create(if (googleInstalled(appContext)) GOOGLE_TTS else null) }
+    init { create(if (useGoogle && googleInstalled(appContext)) GOOGLE_TTS else null) }
 
     private fun create(engineName: String?) {
         engine = engineName

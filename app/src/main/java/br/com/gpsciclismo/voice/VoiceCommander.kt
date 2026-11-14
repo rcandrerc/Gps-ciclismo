@@ -1,6 +1,7 @@
 package br.com.gpsciclismo.voice
 
 import android.Manifest
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -14,6 +15,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.speech.RecognitionListener
+import android.speech.RecognitionService
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.view.KeyEvent
@@ -110,23 +112,45 @@ class VoiceCommander(
             voice.speak("Para fazer perguntas, libere o microfone para o app. Um toque no botão do fone dá o resumo completo.", urgent = true)
             return
         }
-        if (!SpeechRecognizer.isRecognitionAvailable(context)) {
-            voice.speak("Reconhecimento de voz indisponível neste celular.", urgent = true)
+        if (!runCatching { SpeechRecognizer.isRecognitionAvailable(context) }.getOrDefault(false)) {
+            voice.speak(UNAVAILABLE, urgent = true)
             return
         }
         listening = true
+        // Se algo não responder (ex.: a fala não terminar), libera para tentar de novo.
+        main.postDelayed({ listening = false }, 20_000)
         voice.speak("Pode falar.", urgent = true) {
             voice.listenBeep()
-            main.postDelayed({ startRecognizer() }, 250)
+            main.postDelayed({
+                runCatching { startRecognizer() }.onFailure {
+                    // Alguns tablets (ex.: Fire) dizem ter reconhecimento mas falham ao abrir.
+                    listening = false
+                    runCatching { recognizer?.destroy() }
+                    recognizer = null
+                    voice.speak(UNAVAILABLE)
+                }
+            }, 250)
         }
     }
 
+    /** Prefere o reconhecimento do Google, se houver; senão o padrão do aparelho. */
+    private fun createRecognizer(): SpeechRecognizer {
+        val google = runCatching {
+            context.packageManager.queryIntentServices(Intent(RecognitionService.SERVICE_INTERFACE), 0)
+                .map { it.serviceInfo }
+                .firstOrNull { it.packageName.startsWith("com.google") }
+                ?.let { ComponentName(it.packageName, it.name) }
+        }.getOrNull()
+        return if (google != null) SpeechRecognizer.createSpeechRecognizer(context, google)
+        else SpeechRecognizer.createSpeechRecognizer(context)
+    }
+
     private fun startRecognizer() {
-        val r = recognizer ?: SpeechRecognizer.createSpeechRecognizer(context).also { recognizer = it }
+        val r = recognizer ?: createRecognizer().also { recognizer = it }
         r.setRecognitionListener(object : RecognitionListener {
-            override fun onResults(results: Bundle) {
+            override fun onResults(results: Bundle?) {
                 listening = false
-                val alts = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty()
+                val alts = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION).orEmpty()
                 val q = VoiceQuery.parse(alts)
                 if (q == VoiceQuery.UNKNOWN) {
                     voice.speak("Não entendi. Pergunte velocidade, potência, batimento, cadência, distância, quanto falta, ou diga me atualize.")
@@ -158,6 +182,11 @@ class VoiceCommander(
             .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5)
             .putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 1200L)
         r.startListening(intent)
+    }
+
+    companion object {
+        private const val UNAVAILABLE =
+            "Este aparelho não tem reconhecimento de voz. Use o botão Resumo, ou um toque no botão do fone."
     }
 
     fun release() {

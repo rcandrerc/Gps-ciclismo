@@ -133,7 +133,7 @@ class RideRecorder(
         powerAlert = RollingAverage(coachSettings.powerAlertSec)
         autoVoice = coachSettings.voiceEnabled
         blockIndex = -1; blockPowerSum = 0; blockPowerN = 0
-        val v = VoiceAnnouncer(context, coachSettings.voiceName, coachSettings.speechRate)
+        val v = VoiceAnnouncer(context, coachSettings.voiceName, coachSettings.speechRate, useGoogle = coachSettings.googleVoice)
         voice = v
         commander = runCatching {
             VoiceCommander(context, v, onSummary = { speakSummary() }, onQuery = { answer(it) })
@@ -335,7 +335,11 @@ class RideRecorder(
     }
 
     /** Para o botão de microfone na tela. */
-    fun askByVoice() = commander?.listen()
+    fun askByVoice() {
+        runCatching { commander?.listen() }.onFailure {
+            voice?.speak("Não consegui abrir o reconhecimento de voz. Use o botão Resumo.", urgent = true)
+        }
+    }
 
     fun speakSummary() { voice?.speak(fullSummary(), urgent = true) }
 

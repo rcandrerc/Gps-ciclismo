@@ -10,6 +10,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.foundation.layout.PaddingValues
 import br.com.gpsciclismo.core.RollingAverage
@@ -62,8 +65,12 @@ fun ProfileScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
     var powerAlert by remember { mutableStateOf(c.powerAlertSec) }
     var voices by remember { mutableStateOf<List<VoiceOption>>(emptyList()) }
     val context = LocalContext.current
-    val previewer = remember { VoiceAnnouncer(context.applicationContext, onReady = { voices = it.portugueseVoices() }) }
-    DisposableEffect(Unit) { onDispose { previewer.shutdown() } }
+    var googleVoice by remember { mutableStateOf(c.googleVoice) }
+    val previewer = remember(googleVoice) {
+        voices = emptyList()
+        VoiceAnnouncer(context.applicationContext, useGoogle = googleVoice, onReady = { voices = it.portugueseVoices() })
+    }
+    DisposableEffect(previewer) { onDispose { previewer.shutdown() } }
     val sample = "Bloco 2 de 6. Tá abaixo, sobe pra 240 watts."
 
     val ftpInt = ftp.toIntOrNull() ?: 0
@@ -120,15 +127,23 @@ fun ProfileScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
             }
             Text("Voz", style = MaterialTheme.typography.titleSmall)
             val google = remember { VoiceAnnouncer.googleInstalled(context) }
+            Text("Mecanismo de voz", style = MaterialTheme.typography.bodyMedium)
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                SegmentedButton(selected = !googleVoice, onClick = { if (googleVoice) { googleVoice = false; voiceName = null } },
+                    shape = SegmentedButtonDefaults.itemShape(0, 2)) { Text("Padrão do aparelho") }
+                SegmentedButton(selected = googleVoice, onClick = { if (!googleVoice) { googleVoice = true; voiceName = null } },
+                    shape = SegmentedButtonDefaults.itemShape(1, 2), enabled = google) { Text("Google") }
+            }
             Text(
-                if (google) "Usando os Serviços de fala do Google. Escolha a voz e toque em Ouvir; " +
-                    "as de qualidade alta (sem internet) costumam soar mais naturais. Se não aparecer voz do Brasil, toque em Baixar vozes do Google."
-                else "Para vozes mais naturais, instale \"Serviços de fala do Google\" na loja de apps; o app passa a usar elas sozinho, " +
-                    "mesmo que o aparelho não deixe trocar o padrão.",
+                when {
+                    !google -> "Para usar as vozes do Google, instale \"Serviços de fala do Google\" na loja de apps."
+                    googleVoice -> "Se não aparecer voz do Brasil, toque em Baixar vozes do Google. As de qualidade alta soam mais naturais."
+                    else -> "Escolha a voz e toque em Ouvir."
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            OutlinedButton(onClick = {
+            if (!google || googleVoice) OutlinedButton(onClick = {
                 val install = Intent(TextToSpeech.Engine.ACTION_INSTALL_TTS_DATA).setPackage(VoiceAnnouncer.GOOGLE_TTS)
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 val store = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=${VoiceAnnouncer.GOOGLE_TTS}"))
@@ -179,6 +194,7 @@ fun ProfileScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
                         summaryEveryMin = summary.toIntOrNull()?.coerceIn(0, 120) ?: c.summaryEveryMin,
                         voiceEnabled = voice,
                         voiceName = voiceName,
+                        googleVoice = googleVoice,
                         speechRate = rate,
                         powerDisplaySec = powerDisplay,
                         powerAlertSec = powerAlert,
