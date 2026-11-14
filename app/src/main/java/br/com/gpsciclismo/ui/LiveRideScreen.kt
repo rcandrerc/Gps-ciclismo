@@ -31,6 +31,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -72,6 +73,7 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     RideHeader(app, live)
+                    TimeStrip(live)
                     PowerPanel(live, numberSize = 96)
                     VoiceButtons(app)
                     RideControls(app, live) { confirmStop = true }
@@ -87,6 +89,7 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 RideHeader(app, live)
+                TimeStrip(live)
                 PowerPanel(live, numberSize = if (roomy) 96 else 72)
                 Dashboard(app, live, profile, perRow = if (roomy) 3 else 2)
                 Spacer(Modifier.height(4.dp))
@@ -147,6 +150,37 @@ private fun RideHeader(app: GpsCiclismoApp, live: LiveRide) {
         }
     }
 
+}
+
+/** Tempo do treino e, no treino por blocos, quanto falta para acabar. */
+@Composable
+private fun TimeStrip(live: LiveRide) {
+    val total = live.workout?.totalSec
+    val remaining = total?.let { (it - live.elapsedSec).coerceAtLeast(0) }
+    Column(
+        Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.large)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("TEMPO", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(fmtTime(live.elapsedSec), fontSize = 32.sp, style = Tabular, fontWeight = FontWeight.Bold)
+            }
+            if (remaining != null) Column(horizontalAlignment = Alignment.End) {
+                Text("FALTAM", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    if (remaining == 0) "fim" else fmtTime(remaining),
+                    fontSize = 32.sp, style = Tabular, fontWeight = FontWeight.Bold,
+                    color = if (remaining == 0) Green else Color.Unspecified,
+                )
+            }
+        }
+        if (total != null && total > 0) LinearProgressIndicator(
+            progress = { (live.elapsedSec.toFloat() / total).coerceIn(0f, 1f) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
 }
 
 @Composable
