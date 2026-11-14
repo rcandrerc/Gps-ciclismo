@@ -405,8 +405,16 @@ class BleSensorManager(private val context: Context, private val prefs: Prefs) {
         }
     }
 
-    private fun roleOf(address: String): Set<SensorKind> =
-        prefs.sensors.value.values.filter { it.address == address }.map { it.kind }.toSet()
+    private fun roleOf(address: String): Set<SensorKind> {
+        val saved = prefs.sensors.value
+        val roles = saved.values.filter { it.address == address }.map { it.kind }.toMutableSet()
+        // Rolo smart também serve de potência e cadência quando não há outro sensor escolhido.
+        if (SensorKind.TRAINER in roles) {
+            if (saved[SensorKind.POWER] == null) roles += SensorKind.POWER
+            if (saved[SensorKind.CADENCE] == null) roles += SensorKind.CADENCE
+        }
+        return roles
+    }
 
     private fun handle(address: String, uuid: UUID, data: ByteArray) {
         val now = System.currentTimeMillis()
@@ -431,11 +439,12 @@ class BleSensorManager(private val context: Context, private val prefs: Prefs) {
                 if (SensorKind.TRAINER in roles && d.speedKmh != null) {
                     _readings.update { it.copy(trainerSpeedKmh = d.speedKmh, trainerSpeedAt = now) }
                 }
-                // Se o mesmo aparelho tem Cycling Power, a potência/cadência já vem de lá.
-                if (address !in hasCyclingPower) {
-                    if (SensorKind.POWER in roles && d.power != null) _readings.update { it.copy(power = d.power, powerAt = now) }
-                    if (SensorKind.CADENCE in roles && d.cadence != null) _readings.update { it.copy(cadence = d.cadence, cadenceAt = now) }
+                // Se o mesmo aparelho tem Cycling Power, a potência já vem de lá.
+                if (address !in hasCyclingPower && SensorKind.POWER in roles && d.power != null) {
+                    _readings.update { it.copy(power = d.power, powerAt = now) }
                 }
+                // Cadência do FTMS (muitos rolos não mandam pedivela no Cycling Power).
+                if (SensorKind.CADENCE in roles && d.cadence != null) _readings.update { it.copy(cadence = d.cadence, cadenceAt = now) }
             }
             FTMS_CONTROL -> main.post { onControlResponse(address, data) }
         }
