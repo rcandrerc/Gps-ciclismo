@@ -53,6 +53,13 @@ class RideStats {
         if (speedKmh in 0.0..120.0 && speedKmh > maxSpeedKmh) maxSpeedKmh = speedKmh
     }
 
+    /** Indoor: um segundo na velocidade que o rolo informou (sem GPS). */
+    fun addIndoorSecond(speedKmh: Double?) {
+        if (speedKmh == null || speedKmh !in 0.0..120.0) return
+        if (speedKmh >= MOVING_KMH) distanceM += speedKmh / 3.6
+        if (speedKmh > maxSpeedKmh) maxSpeedKmh = speedKmh
+    }
+
     /** Depois de uma pausa, não somar o trecho entre o último ponto e o próximo. */
     fun breakSegment() { lastLat = null; lastLon = null }
 
