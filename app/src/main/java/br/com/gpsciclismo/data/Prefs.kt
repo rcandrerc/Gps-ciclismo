@@ -23,6 +23,10 @@ data class CoachSettings(
     /** Nome da voz do Android escolhida (null = padrão). */
     val voiceName: String? = null,
     val speechRate: Float = 1.05f,
+    /** Segundos da média de potência mostrada na tela (padrão Garmin/Wahoo: 3 s). */
+    val powerDisplaySec: Int = 3,
+    /** Segundos da média usada para decidir os avisos de zona (mais longa = menos aviso falso). */
+    val powerAlertSec: Int = 5,
 )
 
 enum class SensorKind(val label: String) { HEART_RATE("Frequência cardíaca"), CADENCE("Cadência"), POWER("Potência") }
@@ -63,13 +67,16 @@ class Prefs(context: Context) {
         voiceEnabled = sp.getBoolean("voiceEnabled", true),
         voiceName = sp.getString("voiceName", null),
         speechRate = sp.getFloat("speechRate", 1.05f),
+        powerDisplaySec = sp.getInt("powerDisplaySec", 3),
+        powerAlertSec = sp.getInt("powerAlertSec", 5),
     )
 
     fun saveCoach(c: CoachSettings) {
         sp.edit().putInt("tolerancePct", c.tolerancePct).putInt("alertDelaySec", c.alertDelaySec)
             .putInt("repeatEverySec", c.repeatEverySec).putInt("summaryEveryMin", c.summaryEveryMin)
             .putBoolean("voiceEnabled", c.voiceEnabled)
-            .putString("voiceName", c.voiceName).putFloat("speechRate", c.speechRate).apply()
+            .putString("voiceName", c.voiceName).putFloat("speechRate", c.speechRate)
+            .putInt("powerDisplaySec", c.powerDisplaySec).putInt("powerAlertSec", c.powerAlertSec).apply()
         _coach.value = c
     }
 

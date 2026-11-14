@@ -28,6 +28,15 @@ val Green = Color(0xFF2ECC71)
 val Amber = Color(0xFFF5B041)
 val Red = Color(0xFFE74C3C)
 val Blue = Color(0xFF5DADE2)
+val Gray = Color(0xFF9AA0A6)
+
+/** Cor da potência em relação ao alvo do bloco: verde na zona, cinza abaixo, vermelho acima. */
+fun powerStatusColor(status: br.com.gpsciclismo.core.PowerCoach.Status): Color = when (status) {
+    br.com.gpsciclismo.core.PowerCoach.Status.IN_ZONE -> Green
+    br.com.gpsciclismo.core.PowerCoach.Status.BELOW -> Gray
+    br.com.gpsciclismo.core.PowerCoach.Status.ABOVE -> Red
+    else -> Color.Unspecified
+}
 
 private val colors = darkColorScheme(
     primary = Color(0xFF34C3A0),
