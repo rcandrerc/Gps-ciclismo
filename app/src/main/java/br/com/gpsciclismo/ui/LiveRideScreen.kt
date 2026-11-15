@@ -49,6 +49,7 @@ import androidx.navigation.NavController
 import br.com.gpsciclismo.GpsCiclismoApp
 import br.com.gpsciclismo.core.CogganZones
 import br.com.gpsciclismo.core.PowerCoach
+import br.com.gpsciclismo.core.FtpTestTracker
 import br.com.gpsciclismo.recording.RecStatus
 import br.com.gpsciclismo.ble.TrainerControl
 import kotlinx.coroutines.launch
@@ -77,6 +78,7 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
                     RideHeader(app, live)
                     TimeStrip(app, live)
                     PowerPanel(live, numberSize = 96)
+                    IntensityControls(app, live)
                     VoiceButtons(app)
                     RideControls(app, live) { confirmStop = true }
                 }
@@ -93,6 +95,7 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
                 RideHeader(app, live)
                 TimeStrip(app, live)
                 PowerPanel(live, numberSize = if (roomy) 96 else 72)
+                IntensityControls(app, live)
                 Dashboard(app, live, profile, perRow = if (roomy) 3 else 2)
                 Spacer(Modifier.height(4.dp))
                 VoiceButtons(app)
@@ -133,13 +136,13 @@ private fun RideHeader(app: GpsCiclismoApp, live: LiveRide) {
             val trainer by app.sensors.trainer.collectAsStateWithLifecycle()
             Text(
                 when {
-                    !live.setup.ergActive -> "Indoor"
+                    !live.ergOn -> "Indoor · rolo solto"
                     trainer == TrainerControl.DENIED -> "Indoor · ERG recusado"
                     trainer != TrainerControl.OK -> "Indoor · ERG conectando…"
                     live.ergWatts != null -> "Indoor · ERG ${live.ergWatts} W"
                     else -> "Indoor · ERG livre"
                 },
-                color = if (!live.setup.ergActive || trainer == TrainerControl.OK) Green else Amber,
+                color = if (!live.ergOn || trainer == TrainerControl.OK) Green else Amber,
                 style = MaterialTheme.typography.labelMedium,
             )
         } else {
@@ -215,8 +218,13 @@ private fun PowerPanel(live: LiveRide, numberSize: Int) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text("Bloco ${coach.blockIndex + 1} de ${plan.blocks.size} · faltam ${fmtTime(coach.blockRemainingSec)}")
+            if (coach.ftpTest) Text("TESTE DE FTP", style = MaterialTheme.typography.labelLarge, color = Amber)
             Text(
-                "Alvo ${coach.target.label()}" + (coach.range?.let { "  (${it.first}–${it.last} W)" } ?: ""),
+                when {
+                    coach.ftpTest && coach.range != null -> "Alvo ${coach.target.label()} ou mais (mín. ${coach.range.first} W)"
+                    coach.ftpTest -> "Vai com tudo!"
+                    else -> "Alvo ${coach.target.label()}" + (coach.range?.let { "  (${it.first}–${it.last} W)" } ?: "")
+                },
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
@@ -229,10 +237,16 @@ private fun PowerPanel(live: LiveRide, numberSize: Int) {
                     PowerCoach.Status.IN_ZONE -> "na zona"
                     PowerCoach.Status.BELOW -> "abaixo: suba"
                     PowerCoach.Status.ABOVE -> "acima: baixe"
-                    else -> if (live.powerAvg == null) "sem sinal do medidor de potência" else "watts (${live.powerWindowSec} s)"
+                    else -> if (coach.ftpTest && live.powerAvg != null) "watts (${live.powerWindowSec} s)" else if (live.powerAvg == null) "sem sinal do medidor de potência" else "watts (${live.powerWindowSec} s)"
                 },
                 color = if (shown == PowerCoach.Status.NO_TARGET) MaterialTheme.colorScheme.onSurfaceVariant else color,
             )
+            if (coach.ftpTest) live.testAvgPower?.let { avg ->
+                Text(
+                    "Média do teste $avg W · FTP ≈ ${FtpTestTracker.ftpFrom(avg)} W",
+                    style = MaterialTheme.typography.titleMedium, color = Amber,
+                )
+            }
             plan.blocks.getOrNull(coach.blockIndex + 1)?.let {
                 Text("Próximo: ${fmtTime(it.durationSec)} a ${it.target.label()}",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -242,6 +256,34 @@ private fun PowerPanel(live: LiveRide, numberSize: Int) {
         Text("Treino estruturado concluído! Continue gravando ou finalize.", color = Green)
     }
 
+}
+
+/** No treino por blocos: −10/+10 W (como no MyWhoosh) e, no rolo, ERG liga/desliga. */
+@Composable
+private fun IntensityControls(app: GpsCiclismoApp, live: LiveRide) {
+    if (live.workout == null || live.coach == null || live.coach.status == PowerCoach.Status.FINISHED) return
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+        FilledTonalButton(onClick = { app.recorder.adjustIntensity(-10) }, modifier = Modifier.weight(1f).height(56.dp)) {
+            Text("−10 W", style = MaterialTheme.typography.titleMedium)
+        }
+        if (live.setup.indoor) {
+            val on = live.ergOn
+            Button(
+                onClick = { app.recorder.toggleErg() },
+                colors = if (on) ButtonDefaults.buttonColors()
+                else ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurface),
+                modifier = Modifier.weight(1.2f).height(56.dp),
+            ) { Text(if (on) "ERG ligado" else "ERG desligado", style = MaterialTheme.typography.titleSmall) }
+        }
+        FilledTonalButton(onClick = { app.recorder.adjustIntensity(10) }, modifier = Modifier.weight(1f).height(56.dp)) {
+            Text("+10 W", style = MaterialTheme.typography.titleMedium)
+        }
+    }
+    if (live.offsetW != 0) Text(
+        "Intensidade ajustada: ${if (live.offsetW > 0) "+" else "−"}${kotlin.math.abs(live.offsetW)} W nos alvos",
+        style = MaterialTheme.typography.bodySmall, color = Amber,
+    )
 }
 
 @Composable

@@ -8,6 +8,7 @@ import android.os.Looper
 import androidx.core.content.ContextCompat
 import br.com.gpsciclismo.ble.BleSensorManager
 import br.com.gpsciclismo.core.CogganZones
+import br.com.gpsciclismo.core.FtpTestTracker
 import br.com.gpsciclismo.core.PowerCoach
 import br.com.gpsciclismo.core.RideStats
 import br.com.gpsciclismo.core.RollingAverage
@@ -22,6 +23,7 @@ import br.com.gpsciclismo.data.RidePointEntity
 import br.com.gpsciclismo.core.VoiceQuery
 import br.com.gpsciclismo.voice.VoiceAnnouncer
 import br.com.gpsciclismo.voice.VoiceCommander
+import br.com.gpsciclismo.ui.workoutJson
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
@@ -70,6 +72,13 @@ data class LiveRide(
     val ergWatts: Int? = null,
     /** Aproveitamento até agora (% do tempo com alvo dentro da zona). */
     val adherencePct: Int? = null,
+    /** Teste de FTP: média até agora do esforço e segundos contados. */
+    val testAvgPower: Int? = null,
+    val testSec: Int = 0,
+    /** ERG ligado agora (o ciclista pode ligar/desligar durante o treino). */
+    val ergOn: Boolean = false,
+    /** Ajuste de intensidade em watts (botões −10/+10 W). */
+    val offsetW: Int = 0,
 )
 
 /** Grava o treino: GPS + sensores a cada segundo, treinador por voz e banco de dados. */
@@ -94,6 +103,16 @@ class RideRecorder(
     private var blockPowerN = 0
     private var blockSec = 0
     private var score = WorkoutScore()
+    private var ftpTest = FtpTestTracker()
+    private var wasInTest = false
+    private var ftpUsed = 0
+    /** ERG escolhido pelo ciclista (começa como na tela inicial; muda pelo botão no treino). */
+    private var ergUser = false
+    /** Escolha só para o bloco atual (ex.: ligar o ERG num bloco que o plano deixa solto). */
+    private var ergOverride: Boolean? = null
+    private var ergBlock = -1
+    /** O app já mexeu no rolo neste treino (precisa soltar no fim). */
+    private var trainerUsed = false
     private var graceSec = 10
     private var stats = RideStats()
     private var coach: PowerCoach? = null
@@ -140,6 +159,11 @@ class RideRecorder(
         autoVoice = coachSettings.voiceEnabled
         blockIndex = -1; blockPowerSum = 0; blockPowerN = 0; blockSec = 0
         score = WorkoutScore()
+        ftpTest = FtpTestTracker()
+        wasInTest = false
+        ftpUsed = prefs.profile.value.ftp
+        ergUser = setup.ergActive
+        ergOverride = null; ergBlock = -1; trainerUsed = false
         graceSec = maxOf(10, coachSettings.powerAlertSec + 2)
         val v = VoiceAnnouncer(context, coachSettings.voiceName, coachSettings.speechRate, useGoogle = coachSettings.googleVoice)
         voice = v
@@ -166,7 +190,11 @@ class RideRecorder(
         _live.value = LiveRide(status = RecStatus.RECORDING, workout = plan, powerWindowSec = powerDisplaySec, setup = setup)
         scope.launch {
             val id = withContext(Dispatchers.IO) {
-                db.rides().insertRide(RideEntity(uuid = UUID.randomUUID().toString(), startedAt = startedAt, workoutName = plan?.name))
+                db.rides().insertRide(RideEntity(
+                    uuid = UUID.randomUUID().toString(), startedAt = startedAt, workoutName = plan?.name,
+                    planJson = plan?.let { runCatching { workoutJson.encodeToString(WorkoutPlan.serializer(), it) }.getOrNull() },
+                    ftpUsed = ftpUsed,
+                ))
             }
             _live.value = _live.value.copy(rideId = id)
         }
@@ -185,7 +213,7 @@ class RideRecorder(
         if (_live.value.status != RecStatus.RECORDING) return
         stats.breakSegment()
         // ERG: solta a carga na pausa (estrada plana); o bloco volta sozinho no próximo segundo após continuar.
-        if (setup.ergActive && coach != null) sensors.setTrainerCommand(TrainerCommand.Flat)
+        if (trainerUsed && coach != null) sensors.setTrainerCommand(TrainerCommand.Flat)
         _live.value = _live.value.copy(status = RecStatus.PAUSED, ergWatts = null)
         voice?.speak("Treino pausado.", urgent = true)
     }
@@ -202,7 +230,7 @@ class RideRecorder(
         if (cur.status == RecStatus.IDLE) return null
         ticker?.cancel()
         fused.removeLocationUpdates(locationCallback)
-        if (setup.ergActive) {
+        if (trainerUsed) {
             sensors.setTrainerCommand(TrainerCommand.None) // solta o rolo antes de desconectar
             delay(800)
         }
@@ -229,6 +257,8 @@ class RideRecorder(
                     avgCadence = stats.avgCadence,
                     kcal = kcal,
                     adherencePct = score.pct,
+                    testAvgPower = ftpTest.avg.takeIf { ftpTest.sec >= FtpTestTracker.MIN_SEC },
+                    testSec = ftpTest.sec.takeIf { it > 0 },
                 ))
             }
         }
@@ -301,6 +331,9 @@ class RideRecorder(
             if (st.range != null && st.status != PowerCoach.Status.FINISHED && blockSec > graceSec) {
                 score.add(PowerCoach.compare(avgAlert, st.range) == PowerCoach.Status.IN_ZONE)
             }
+            if (st.ftpTest) ftpTest.add(pw)
+            else if (wasInTest) voice?.speak(testResultText(), urgent = true) // terminou o esforço do teste
+            wasInTest = st.ftpTest
         }
         val erg = updateTrainer()
         val summaryMin = prefs.coach.value.summaryEveryMin
@@ -312,6 +345,7 @@ class RideRecorder(
                 rideId = cur.rideId, time = now,
                 lat = loc?.latitude, lon = loc?.longitude, altitude = loc?.takeIf { it.hasAltitude() }?.altitude,
                 speedKmh = speed, power = pw, heartRate = hr, cadence = cad,
+                block = coach?.state?.blockIndex?.takeIf { it >= 0 && coach?.state?.status != PowerCoach.Status.FINISHED },
             )
             val size = synchronized(buffer) { buffer += point; buffer.size }
             if (size >= 10) scope.launch(Dispatchers.IO) { flush() }
@@ -334,17 +368,61 @@ class RideRecorder(
             coach = coach?.state,
             ergWatts = erg,
             adherencePct = score.pct,
+            testAvgPower = ftpTest.avg,
+            testSec = ftpTest.sec,
+            ergOn = coach?.state?.let { ergBlock == it.blockIndex && (ergOverride ?: (ergUser && it.erg)) } ?: false,
+            offsetW = coach?.offsetW ?: 0,
         )
+    }
+
+    private fun testResultText(): String {
+        val avg = ftpTest.avg ?: return "Fim do teste. Sem dados de potência."
+        val ftp = FtpTestTracker.ftpFrom(avg)
+        return "Fim do teste de FTP! Média do esforço $avg watts. FTP estimado $ftp watts. Agora solta as pernas."
+    }
+
+    /** ERG vale agora? Escolha do ciclista, a não ser que o bloco peça o rolo solto (ex.: teste de FTP). */
+    private fun ergNow(st: PowerCoach.State): Boolean {
+        if (st.blockIndex != ergBlock) { ergBlock = st.blockIndex; ergOverride = null }
+        return ergOverride ?: (ergUser && st.erg)
     }
 
     /** ERG: manda para o rolo a carga do bloco atual. Retorna os watts mandados. */
     private fun updateTrainer(): Int? {
-        if (!setup.ergActive) return null
+        if (!setup.indoor) return null
         val st = coach?.state ?: return null // pedal livre: o app não mexe no rolo
-        val target = st.target.takeIf { st.status != PowerCoach.Status.FINISHED }
-        val watts = target?.ergWatts(prefs.profile.value.ftp)
+        if (!ergNow(st)) {
+            if (trainerUsed) sensors.setTrainerCommand(TrainerCommand.Flat) // rolo solto, carga pelas marchas
+            return null
+        }
+        trainerUsed = true
+        val watts = st.ergWatts.takeIf { st.status != PowerCoach.Status.FINISHED }
         sensors.setTrainerCommand(if (watts != null) TrainerCommand.Erg(watts) else TrainerCommand.Flat)
         return watts
+    }
+
+    /** Botão ERG da tela do treino. Desligar vale daqui pra frente; ligar num bloco solto vale só nele. */
+    fun toggleErg() {
+        if (!setup.indoor) return
+        val st = coach?.state ?: return
+        val on = !ergNow(st)
+        ergOverride = on
+        if (on || st.erg) ergUser = on
+        _live.value = _live.value.copy(ergOn = on)
+        voice?.speak(if (on) "ERG ligado." else "ERG desligado. Use as marchas.", urgent = true)
+    }
+
+    /** Botões −10/+10 W: muda a intensidade do treino daqui pra frente. */
+    fun adjustIntensity(deltaW: Int) {
+        val c = coach ?: return
+        c.adjust(deltaW)
+        val off = c.offsetW
+        _live.value = _live.value.copy(offsetW = off)
+        voice?.speak(when {
+            off == 0 -> "Intensidade original."
+            off > 0 -> "Mais $off watts."
+            else -> "Menos ${-off} watts."
+        }, urgent = true)
     }
 
     private suspend fun flush() {
@@ -372,6 +450,7 @@ class RideRecorder(
         val target = st.target ?: return null
         val sb = StringBuilder("Bloco ${st.blockIndex + 1} de ${plan.blocks.size}, alvo ${target.spoken()}, faltam ${PowerCoach.formatDuration(st.blockRemainingSec)}")
         if (blockPowerN > 0) sb.append(", média do bloco ${blockPowerSum / blockPowerN} watts")
+        if (st.ftpTest) ftpTest.avg?.let { sb.append(", média do teste $it watts, FTP estimado ${FtpTestTracker.ftpFrom(it)}") }
         plan.blocks.getOrNull(st.blockIndex + 1)?.let { sb.append(". Depois, ${PowerCoach.formatDuration(it.durationSec)} a ${it.target.spoken()}") }
         return sb.append(".").toString()
     }

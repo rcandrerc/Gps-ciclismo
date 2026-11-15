@@ -40,6 +40,13 @@ data class RideEntity(
     val kcal: Int = 0,
     /** Aproveitamento do treino por blocos (% do tempo na zona), ou null. */
     val adherencePct: Int? = null,
+    /** JSON do treino seguido ([br.com.gpsciclismo.core.WorkoutPlan]), para exportar e analisar. */
+    val planJson: String? = null,
+    /** FTP do perfil quando o treino começou. */
+    val ftpUsed: Int? = null,
+    /** Teste de FTP: média de potência do esforço e segundos com potência. */
+    val testAvgPower: Int? = null,
+    val testSec: Int? = null,
 )
 
 @Entity(
@@ -60,6 +67,8 @@ data class RidePointEntity(
     val power: Int?,
     val heartRate: Int?,
     val cadence: Int?,
+    /** Índice do bloco do treino (0 = primeiro), ou null sem treino estruturado. */
+    val block: Int? = null,
 )
 
 @Entity
@@ -106,7 +115,7 @@ interface WorkoutDao {
 
 @Database(
     entities = [RideEntity::class, RidePointEntity::class, WorkoutEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -116,13 +125,24 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "gps-ciclismo.db")
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
 
         /** Versão 2: nota/aproveitamento do treino. Mantém o histórico. */
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE RideEntity ADD COLUMN adherencePct INTEGER")
+            }
+        }
+
+        /** Versão 3: teste de FTP e dados para exportar (plano, FTP usado, bloco de cada ponto). */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE RideEntity ADD COLUMN planJson TEXT")
+                db.execSQL("ALTER TABLE RideEntity ADD COLUMN ftpUsed INTEGER")
+                db.execSQL("ALTER TABLE RideEntity ADD COLUMN testAvgPower INTEGER")
+                db.execSQL("ALTER TABLE RideEntity ADD COLUMN testSec INTEGER")
+                db.execSQL("ALTER TABLE RidePointEntity ADD COLUMN block INTEGER")
             }
         }
     }

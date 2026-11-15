@@ -84,9 +84,20 @@ sealed class PowerTarget {
 private val ERG_ZONE_PCT = doubleArrayOf(0.50, 0.65, 0.83, 0.98, 1.13, 1.35, 1.50)
 
 @Serializable
-data class WorkoutBlock(val durationSec: Int, val target: PowerTarget)
+data class WorkoutBlock(
+    val durationSec: Int,
+    val target: PowerTarget,
+    /** false = o rolo fica solto (estrada plana) neste bloco mesmo com ERG ligado; o alvo vira só referência. */
+    val erg: Boolean = true,
+    /** Bloco do esforço do teste de FTP: a média destes blocos dá o FTP (95%). Acima do alvo não é avisado. */
+    val ftpTest: Boolean = false,
+    /** Frase falada no começo do bloco (dica do treino). */
+    val note: String? = null,
+)
 
 @Serializable
 data class WorkoutPlan(val name: String, val blocks: List<WorkoutBlock>) {
     val totalSec: Int get() = blocks.sumOf { it.durationSec }
+    /** Duração planejada do esforço do teste de FTP (0 se não é teste). */
+    val ftpTestSec: Int get() = blocks.filter { it.ftpTest }.sumOf { it.durationSec }
 }
