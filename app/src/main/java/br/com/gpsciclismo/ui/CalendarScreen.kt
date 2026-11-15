@@ -57,6 +57,13 @@ import br.com.gpsciclismo.core.PowerTarget
 import br.com.gpsciclismo.core.TrainingCalendar
 import br.com.gpsciclismo.core.WorkoutPlan
 import kotlinx.coroutines.launch
+import java.time.ZoneId
+import java.time.Instant
+import br.com.gpsciclismo.core.WorkoutScore
+import br.com.gpsciclismo.data.RideEntity
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.CardDefaults
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -65,6 +72,7 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 private val ptBR = Locale("pt", "BR")
+private val hourFmt = DateTimeFormatter.ofPattern("HH:mm", ptBR)
 private val dayTitle = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", ptBR)
 
 @Composable
@@ -87,7 +95,13 @@ fun CalendarScreen(app: GpsCiclismoApp, nav: NavController) {
     LaunchedEffect(Unit) { refresh() }
 
     val listState = rememberLazyListState()
-    val todayPlan = calendar?.day(today)?.workout
+    // Treinos salvos no histórico, agrupados pelo dia em que começaram.
+    val ridesFlow = remember { app.db.rides().rides() }
+    val rides by ridesFlow.collectAsStateWithLifecycle(emptyList())
+    val ridesByDay = remember(rides) {
+        rides.groupBy { Instant.ofEpochMilli(it.startedAt).atZone(ZoneId.systemDefault()).toLocalDate() }
+    }
+    val todayPlan = calendar?.day(today)?.workout?.takeIf { ridesByDay[today].isNullOrEmpty() }
 
     Column(Modifier.fillMaxSize()) {
         BackBar(calendar?.name ?: "Calendário", { nav.popBackStack() }) {
@@ -115,13 +129,14 @@ fun CalendarScreen(app: GpsCiclismoApp, nav: NavController) {
                 }
             }
             val grid: @Composable (Dp) -> Unit = { cellHeight ->
-                MonthGrid(month, today, selected, calendar, cellHeight,
+                MonthGrid(month, today, selected, calendar, ridesByDay.keys, cellHeight,
                     onPrev = { month = month.minusMonths(1) },
                     onNext = { month = month.plusMonths(1) },
                     onSelect = { selected = it })
             }
             val detail: @Composable () -> Unit = {
-                DayDetail(selected, calendar?.day(selected), profile.ftp) { plan -> start(plan) }
+                DayDetail(selected, calendar?.day(selected), ridesByDay[selected].orEmpty(), profile.ftp,
+                    onOpenRide = { nav.navigate("ride/$it") }) { plan -> start(plan) }
             }
             if (sideBySide) {
                 // Altura da célula calculada para o mês inteiro (até 6 semanas) caber sem rolar.
@@ -165,6 +180,7 @@ private fun MonthGrid(
     today: LocalDate,
     selected: LocalDate,
     calendar: TrainingCalendar?,
+    doneDays: Set<LocalDate>,
     cellHeight: Dp,
     onPrev: () -> Unit,
     onNext: () -> Unit,
@@ -198,7 +214,7 @@ private fun MonthGrid(
                         Spacer(Modifier.weight(1f).height(cellHeight))
                     } else {
                         val date = month.atDay(idx + 1)
-                        DayCell(date, calendar?.day(date), date == today, date == selected, Modifier.weight(1f).height(cellHeight)) { onSelect(date) }
+                        DayCell(date, calendar?.day(date), date in doneDays, date == today, date == selected, Modifier.weight(1f).height(cellHeight)) { onSelect(date) }
                     }
                 }
             }
@@ -206,6 +222,7 @@ private fun MonthGrid(
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.padding(top = 4.dp)) {
             Legend(MaterialTheme.colorScheme.primary, "Treino")
             Legend(Gray, "Descanso")
+            Legend(Green, "Feito")
         }
     }
 }
@@ -219,7 +236,7 @@ private fun Legend(color: Color, label: String) {
 }
 
 @Composable
-private fun DayCell(date: LocalDate, day: CalendarDay?, isToday: Boolean, isSelected: Boolean, modifier: Modifier, onClick: () -> Unit) {
+private fun DayCell(date: LocalDate, day: CalendarDay?, done: Boolean, isToday: Boolean, isSelected: Boolean, modifier: Modifier, onClick: () -> Unit) {
     val primary = MaterialTheme.colorScheme.primary
     val shape = RoundedCornerShape(10.dp)
     Box(
@@ -232,6 +249,7 @@ private fun DayCell(date: LocalDate, day: CalendarDay?, isToday: Boolean, isSele
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text("${date.dayOfMonth}", fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal)
             val dot = when {
+                done -> Green
                 day == null -> Color.Transparent
                 day.isRest -> Gray
                 else -> primary
@@ -242,16 +260,64 @@ private fun DayCell(date: LocalDate, day: CalendarDay?, isToday: Boolean, isSele
 }
 
 @Composable
-private fun DayDetail(date: LocalDate, day: CalendarDay?, ftp: Int, onStart: (WorkoutPlan) -> Unit) {
+private fun DayDetail(
+    date: LocalDate,
+    day: CalendarDay?,
+    done: List<RideEntity>,
+    ftp: Int,
+    onOpenRide: (Long) -> Unit,
+    onStart: (WorkoutPlan) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        done.forEach { r -> DoneRideCard(r) { onOpenRide(r.id) } }
+        PlanCard(date, day, done.isNotEmpty(), ftp, onStart)
+    }
+}
+
+/** Treino já feito neste dia: resumo e toque para ver tudo (mapa, gráficos, blocos). */
+@Composable
+private fun DoneRideCard(r: RideEntity, onClick: () -> Unit) {
+    Card(onClick = onClick, colors = CardDefaults.cardColors(containerColor = Green.copy(alpha = 0.12f))) {
+        Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Filled.CheckCircle, null, tint = Green)
+                Text("  Feito às ${hourFmt.format(Instant.ofEpochMilli(r.startedAt).atZone(ZoneId.systemDefault()))}",
+                    style = MaterialTheme.typography.labelLarge, color = Green)
+            }
+            Text(r.workoutName ?: "Pedal livre", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            r.adherencePct?.let { pct ->
+                Text("${WorkoutScore.starsText(pct)}  $pct% de aproveitamento", color = Amber)
+            }
+            Text(
+                buildString {
+                    append(fmtTime(r.elapsedSec))
+                    if (r.avgPower > 0) append(" · ${r.avgPower} W médios (máx ${r.maxPower})")
+                    if (r.avgHr > 0) append(" · FC ${r.avgHr} bpm")
+                    if (r.avgCadence > 0) append(" · ${r.avgCadence} rpm")
+                    if (r.distanceM > 50) append(" · ${fmtKm(r.distanceM)} km")
+                    if (r.kcal > 0) append(" · ${r.kcal} kcal")
+                },
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text("Toque para ver os detalhes", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+        }
+    }
+}
+
+@Composable
+private fun PlanCard(date: LocalDate, day: CalendarDay?, alreadyDone: Boolean, ftp: Int, onStart: (WorkoutPlan) -> Unit) {
     Card {
         Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(date.format(dayTitle).replaceFirstChar { it.titlecase(ptBR) },
                 style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (day == null) {
+                if (alreadyDone) return@Column
                 Text("Nada planejado para este dia.", style = MaterialTheme.typography.titleMedium)
                 return@Column
             }
-            Text(day.displayTitle(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text((if (alreadyDone) "Planejado: " else "") + day.displayTitle(),
+                style = if (alreadyDone) MaterialTheme.typography.titleMedium else MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold)
             val plan = day.workout
             if (plan != null) {
                 Text(
@@ -263,7 +329,12 @@ private fun DayDetail(date: LocalDate, day: CalendarDay?, ftp: Int, onStart: (Wo
                 )
             }
             if (day.notes.isNotBlank()) Text(day.notes)
-            if (plan != null) {
+            if (plan != null && alreadyDone) {
+                // Já feito: o plano fica só como referência; refazer é opção discreta.
+                OutlinedButton(onClick = { onStart(plan) }, modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
+                    Text("Fazer de novo")
+                }
+            } else if (plan != null) {
                 Spacer(Modifier.height(4.dp))
                 plan.blocks.forEachIndexed { i, b ->
                     Row {
