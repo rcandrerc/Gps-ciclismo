@@ -23,5 +23,9 @@ Para mudar o plano basta editar este arquivo e juntar na `main`; não precisa de
 
 - `date` (obrigatório): AAAA-MM-DD.
 - `workout`: mesmo formato dos treinos do app (`WorkoutPlan`); alvo `{"type":"watts","watts":240}`, `{"type":"zone","zone":2}` ou `{"type":"free"}`. Sem `workout`, o dia é descanso.
+- Cada bloco pode ter ainda (opcionais):
+  - `"erg": false` — o rolo fica solto (estrada plana) nesse bloco mesmo com ERG ligado; o alvo vira só referência.
+  - `"ftpTest": true` — bloco do esforço do teste de FTP. O app soma a potência desses blocos, mostra a média ao vivo e no fim calcula FTP = 95% da média, com botão para atualizar o perfil. Acima do alvo não tem aviso.
+  - `"note": "texto"` — frase falada no começo do bloco.
 - `title`, `where` (`rolo` ou `rua`) e `notes` são opcionais.
 - Dia que não aparece na lista fica vazio no calendário.

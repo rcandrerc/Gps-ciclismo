@@ -30,6 +30,14 @@ class PowerCoach(
         val target: PowerTarget?,
         val range: IntRange?,
         val status: Status,
+        /** Bloco do esforço do teste de FTP (acima do alvo é bom, não avisa). */
+        val ftpTest: Boolean = false,
+        /** false = rolo solto neste bloco, mesmo com ERG ligado. */
+        val erg: Boolean = true,
+        /** Ajuste de intensidade do ciclista (botões −10/+10 W), já somado ao alvo. */
+        val offsetW: Int = 0,
+        /** Watts para o ERG neste bloco (com o ajuste), ou null em bloco livre. */
+        val ergWatts: Int? = null,
     )
 
     private var currentBlock = -1
@@ -39,6 +47,29 @@ class PowerCoach(
     private var alerted = false
     private var warnedEnd = false
     private var finished = false
+
+    /** Ajuste de intensidade em watts (botões −10/+10 W). Vale para o bloco atual e os seguintes. */
+    var offsetW = 0
+        private set
+
+    fun adjust(deltaW: Int) {
+        offsetW = (offsetW + deltaW).coerceIn(-200, 200)
+        // reinicia a contagem dos avisos: o alvo mudou
+        outSince = null; outDirection = null; lastAlertAt = null
+    }
+
+    /** Alvo com o ajuste aplicado (watts fixos andam junto; zona continua zona). */
+    private fun shifted(t: PowerTarget): PowerTarget =
+        if (t is PowerTarget.Watts && offsetW != 0) PowerTarget.Watts((t.watts + offsetW).coerceAtLeast(0)) else t
+
+    private fun shiftedBlock(b: WorkoutBlock) = b.copy(target = shifted(b.target))
+
+    private fun rangeOf(b: WorkoutBlock): IntRange? {
+        val r = blockRange(shiftedBlock(b), settings.ftp, settings.tolerancePct) ?: return null
+        if (b.target !is PowerTarget.Zone || offsetW == 0) return r
+        val last = if (r.last >= NO_CEILING) r.last else r.last + offsetW
+        return (r.first + offsetW).coerceAtLeast(0)..last
+    }
 
     var state: State = State(-1, 0, null, null, Status.NO_TARGET)
         private set
@@ -52,12 +83,14 @@ class PowerCoach(
         return null
     }
 
-    private fun describe(block: WorkoutBlock): String {
+    private fun describe(original: WorkoutBlock): String {
+        val block = shiftedBlock(original)
         val dur = formatDuration(block.durationSec)
         val t = block.target
         return when (t) {
+            is PowerTarget.Watts -> if (block.ftpTest) "$dur a ${t.watts} watts ou mais" else "$dur a ${t.spoken()}"
             is PowerTarget.Zone -> {
-                val r = t.range(settings.ftp, settings.tolerancePct)!!
+                val r = rangeOf(original)!!
                 "$dur em zona ${t.zone}, entre ${r.first} e ${r.last} watts"
             }
             else -> "$dur a ${t.spoken()}"
@@ -85,6 +118,7 @@ class PowerCoach(
             outSince = null; outDirection = null; lastAlertAt = null
             alerted = false; warnedEnd = false
             out += "Bloco ${index + 1} de ${plan.blocks.size}. ${describe(block)}."
+            block.note?.takeIf { it.isNotBlank() }?.let { out += it }
         }
         val blockElapsed = block.durationSec - remaining
 
@@ -95,9 +129,11 @@ class PowerCoach(
             else "Faltam ${remaining} segundos para terminar."
         }
 
-        val range = block.target.range(settings.ftp, settings.tolerancePct)
+        val range = rangeOf(block)
         val status = compare(power, range)
-        state = State(index, remaining, block.target, range, status)
+        val target = shifted(block.target)
+        val erg = target.ergWatts(settings.ftp)?.let { if (block.target is PowerTarget.Zone) it + offsetW else it }?.coerceAtLeast(0)
+        state = State(index, remaining, target, range, status, block.ftpTest, block.erg, offsetW, erg)
 
         if (range != null && power != null && blockElapsed >= settings.graceSec && !(remaining <= settings.warnBeforeEndSec)) {
             if (status == Status.BELOW || status == Status.ABOVE) {
@@ -113,7 +149,7 @@ class PowerCoach(
                 if (due) {
                     lastAlertAt = elapsedSec
                     alerted = true
-                    out += alertText(status, block.target, range)
+                    out += alertText(status, target, range)
                 }
             } else {
                 if (alerted) out += "Boa, na zona."
@@ -134,6 +170,14 @@ class PowerCoach(
     }
 
     companion object {
+        /** No teste de FTP o alvo é um piso: qualquer coisa acima dele está bom. */
+        fun blockRange(block: WorkoutBlock, ftp: Int, tolerancePct: Int): IntRange? {
+            val r = block.target.range(ftp, tolerancePct) ?: return null
+            return if (block.ftpTest) r.first..NO_CEILING else r
+        }
+
+        const val NO_CEILING = 9999
+
         /** Compara a potência com a faixa do alvo (usado nos avisos e na cor da tela). */
         fun compare(power: Int?, range: IntRange?): Status = when {
             range == null || power == null -> Status.NO_TARGET
