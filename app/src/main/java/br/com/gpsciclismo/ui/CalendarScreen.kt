@@ -8,13 +8,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -42,6 +46,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -80,29 +86,75 @@ fun CalendarScreen(app: GpsCiclismoApp, nav: NavController) {
     }
     LaunchedEffect(Unit) { refresh() }
 
+    val listState = rememberLazyListState()
+    val todayPlan = calendar?.day(today)?.workout
+
     Column(Modifier.fillMaxSize()) {
         BackBar(calendar?.name ?: "Calendário", { nav.popBackStack() }) {
             if (loading) CircularProgressIndicator(Modifier.size(24.dp).padding(end = 4.dp), strokeWidth = 2.dp)
             else IconButton(onClick = { scope.launch { refresh() } }) { Icon(Icons.Filled.Refresh, "Atualizar plano") }
         }
-        LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (offline) item {
-                Text(
+        BoxWithConstraints(Modifier.fillMaxSize()) {
+            // Tablet deitado (ou tela larga e baixa): calendário à esquerda, treino do dia à direita,
+            // para o botão "Iniciar" nunca ficar escondido embaixo do mês.
+            val sideBySide = maxWidth >= 600.dp && maxWidth > maxHeight
+            val status: @Composable () -> Unit = {
+                if (offline) Text(
                     if (calendar == null) "Não consegui baixar o plano. Confira a internet e toque em atualizar."
                     else "Sem internet: mostrando a última versão salva do plano.",
                     color = Amber, style = MaterialTheme.typography.bodySmall,
                 )
             }
-            item {
-                MonthGrid(month, today, selected, calendar,
+            val todayButton: @Composable () -> Unit = {
+                // Atalho: o treino de hoje sempre a um toque, sem precisar achar o dia no mês.
+                if (todayPlan != null) {
+                    Button(onClick = { start(todayPlan) }, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+                        Icon(Icons.Filled.PlayArrow, null)
+                        Text("  Treino de hoje: ${todayPlan.name}", style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                }
+            }
+            val grid: @Composable (Dp) -> Unit = { cellHeight ->
+                MonthGrid(month, today, selected, calendar, cellHeight,
                     onPrev = { month = month.minusMonths(1) },
                     onNext = { month = month.plusMonths(1) },
                     onSelect = { selected = it })
             }
-            item {
+            val detail: @Composable () -> Unit = {
                 DayDetail(selected, calendar?.day(selected), profile.ftp) { plan -> start(plan) }
             }
-            item { Spacer(Modifier.height(16.dp)) }
+            if (sideBySide) {
+                // Altura da célula calculada para o mês inteiro (até 6 semanas) caber sem rolar.
+                val cell = ((maxHeight - 140.dp) / 6).coerceIn(32.dp, 56.dp)
+                Row(Modifier.fillMaxSize().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Column(Modifier.weight(1f).fillMaxHeight().verticalScroll(rememberScrollState())) {
+                        status()
+                        grid(cell)
+                    }
+                    LazyColumn(Modifier.weight(1f).fillMaxHeight(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        item { todayButton() }
+                        item { detail() }
+                        item { Spacer(Modifier.height(16.dp)) }
+                    }
+                }
+            } else {
+                LazyColumn(
+                    Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                    state = listState,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    item { status() }
+                    item { todayButton() }
+                    item { grid(46.dp) }
+                    item { detail() }
+                    item { Spacer(Modifier.height(16.dp)) }
+                }
+                // Ao tocar num dia, rola até o treino dele (antes ficava escondido embaixo do mês).
+                var first by remember { mutableStateOf(true) }
+                LaunchedEffect(selected) {
+                    if (first) first = false else listState.animateScrollToItem(3)
+                }
+            }
         }
     }
 }
@@ -113,6 +165,7 @@ private fun MonthGrid(
     today: LocalDate,
     selected: LocalDate,
     calendar: TrainingCalendar?,
+    cellHeight: Dp,
     onPrev: () -> Unit,
     onNext: () -> Unit,
     onSelect: (LocalDate) -> Unit,
@@ -142,10 +195,10 @@ private fun MonthGrid(
                 for (d in 0 until 7) {
                     val idx = w * 7 + d - offset
                     if (idx < 0 || idx >= month.lengthOfMonth()) {
-                        Spacer(Modifier.weight(1f).aspectRatio(1f))
+                        Spacer(Modifier.weight(1f).height(cellHeight))
                     } else {
                         val date = month.atDay(idx + 1)
-                        DayCell(date, calendar?.day(date), date == today, date == selected, Modifier.weight(1f)) { onSelect(date) }
+                        DayCell(date, calendar?.day(date), date == today, date == selected, Modifier.weight(1f).height(cellHeight)) { onSelect(date) }
                     }
                 }
             }
@@ -170,7 +223,7 @@ private fun DayCell(date: LocalDate, day: CalendarDay?, isToday: Boolean, isSele
     val primary = MaterialTheme.colorScheme.primary
     val shape = RoundedCornerShape(10.dp)
     Box(
-        modifier.aspectRatio(1f).padding(2.dp).clip(shape)
+        modifier.padding(2.dp).clip(shape)
             .background(if (isSelected) primary.copy(alpha = 0.25f) else Color.Transparent)
             .then(if (isToday) Modifier.border(1.5.dp, primary, shape) else Modifier)
             .clickable(onClick = onClick),
