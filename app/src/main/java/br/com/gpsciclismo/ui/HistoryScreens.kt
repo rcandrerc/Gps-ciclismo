@@ -14,6 +14,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.Button
+import br.com.gpsciclismo.core.FtpTestTracker
+import br.com.gpsciclismo.data.RideExport
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.ui.Alignment
@@ -23,6 +27,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -95,6 +100,7 @@ fun RideDetailScreen(app: GpsCiclismoApp, id: Long, onBack: () -> Unit) {
     var confirmDelete by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val weight = app.prefs.profile.value.weightKg
+    val context = LocalContext.current
 
     LaunchedEffect(id) {
         ride = app.db.rides().ride(id)
@@ -103,6 +109,9 @@ fun RideDetailScreen(app: GpsCiclismoApp, id: Long, onBack: () -> Unit) {
 
     Column(Modifier.fillMaxSize()) {
         BackBar(ride?.let { dateFmt.format(Date(it.startedAt)) } ?: "Treino", onBack) {
+            IconButton(onClick = {
+                ride?.let { r -> runCatching { RideExport.share(context, r, points) } }
+            }) { Icon(Icons.Filled.Share, "Exportar dados") }
             IconButton(onClick = { confirmDelete = true }) { Icon(Icons.Filled.Delete, "Excluir") }
         }
         val r = ride ?: return@Column
@@ -115,6 +124,7 @@ fun RideDetailScreen(app: GpsCiclismoApp, id: Long, onBack: () -> Unit) {
             else Text("Sem percurso de GPS neste treino.", color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             r.workoutName?.let { Text(it, style = MaterialTheme.typography.titleMedium) }
+            r.testAvgPower?.let { avg -> FtpTestCard(app, avg, r.testSec ?: 0, r.planJson) }
             r.adherencePct?.let { pct -> ScoreCard(pct) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Metric("Distância", fmtKm(r.distanceM), "km", Modifier.weight(1f))
@@ -134,6 +144,14 @@ fun RideDetailScreen(app: GpsCiclismoApp, id: Long, onBack: () -> Unit) {
                 Metric("Cadência", r.avgCadence.toString(), "rpm", Modifier.weight(1f))
             }
             Metric("Calorias", r.kcal.toString(), "kcal (aprox.)", Modifier.fillMaxWidth())
+            OutlinedButton(
+                onClick = { runCatching { RideExport.share(context, r, points) } },
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+            ) { Icon(Icons.Filled.Share, null); Text("  Exportar dados (CSV)") }
+            Text(
+                "Manda a planilha segundo a segundo (potência, FC, cadência, blocos) por WhatsApp, Drive ou e-mail, ou anexa na conversa com o Claude para analisar.",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 
@@ -189,6 +207,33 @@ fun ScoreCard(pct: Int) {
                 "Tempo dentro da zona/alvo de cada bloco (sem contar pausas, blocos livres e os primeiros segundos de cada bloco).",
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+    }
+}
+
+/** Resultado do teste de FTP: média do esforço, FTP estimado e botão para atualizar o perfil. */
+@Composable
+fun FtpTestCard(app: GpsCiclismoApp, avg: Int, sec: Int, planJson: String?) {
+    val profile by app.prefs.profile.collectAsStateWithLifecycle()
+    val ftp = FtpTestTracker.ftpFrom(avg)
+    val planned = planJson?.let { runCatching { workoutJson.decodeFromString(br.com.gpsciclismo.core.WorkoutPlan.serializer(), it) }.getOrNull() }
+        ?.ftpTestSec ?: 1200
+    val complete = FtpTestTracker.complete(sec, planned)
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.fillMaxWidth().padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("TESTE DE FTP", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("$ftp W", fontSize = 44.sp, color = Green)
+            Text("FTP estimado (95% da média de $avg W em ${fmtTime(sec)})", style = MaterialTheme.typography.bodyMedium)
+            if (!complete) Text(
+                "Esforço mais curto que o planejado (${fmtTime(planned)}): o número pode estar fora.",
+                style = MaterialTheme.typography.bodySmall, color = Amber,
+            )
+            Text("FTP no perfil hoje: ${profile.ftp} W", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (profile.ftp != ftp) Button(
+                onClick = { app.prefs.saveProfile(profile.copy(ftp = ftp)) },
+                modifier = Modifier.padding(top = 8.dp).height(52.dp),
+            ) { Text("Usar $ftp W como meu FTP") }
+            else Text("Perfil já está com este FTP. ✓", color = Green, modifier = Modifier.padding(top = 8.dp))
         }
     }
 }
