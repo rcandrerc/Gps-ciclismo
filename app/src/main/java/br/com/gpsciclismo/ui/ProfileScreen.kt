@@ -45,15 +45,17 @@ import br.com.gpsciclismo.GpsCiclismoApp
 import br.com.gpsciclismo.core.CogganZones
 import br.com.gpsciclismo.data.CoachSettings
 import br.com.gpsciclismo.data.Profile
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun ProfileScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
-    val p = app.prefs.profile.value
+    // Acompanha o perfil: se a nuvem trouxer um perfil mais novo, os campos se atualizam.
+    val p by app.prefs.profile.collectAsStateWithLifecycle()
     val c = app.prefs.coach.value
-    var name by remember { mutableStateOf(p.name) }
-    var weight by remember { mutableStateOf(if (p.weightKg > 0) fmt1(p.weightKg) else "") }
-    var height by remember { mutableStateOf(if (p.heightCm > 0) p.heightCm.toString() else "") }
-    var ftp by remember { mutableStateOf(p.ftp.toString()) }
+    var name by remember(p) { mutableStateOf(p.name) }
+    var weight by remember(p) { mutableStateOf(if (p.weightKg > 0) fmt1(p.weightKg) else "") }
+    var height by remember(p) { mutableStateOf(if (p.heightCm > 0) p.heightCm.toString() else "") }
+    var ftp by remember(p) { mutableStateOf(p.ftp.toString()) }
     var tolerance by remember { mutableStateOf(c.tolerancePct.toString()) }
     var delay by remember { mutableStateOf(c.alertDelaySec.toString()) }
     var repeat by remember { mutableStateOf(c.repeatEverySec.toString()) }
@@ -76,11 +78,12 @@ fun ProfileScreen(app: GpsCiclismoApp, onBack: () -> Unit) {
     val ftpInt = ftp.toIntOrNull() ?: 0
 
     Column(Modifier.fillMaxSize()) {
-        BackBar("Perfil e voz", onBack)
+        BackBar("Perfil, conta e voz", onBack)
         Column(
             Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            CloudAccountCard(app.cloud)
             Text("Atleta", style = MaterialTheme.typography.titleMedium)
             OutlinedTextField(name, { name = it }, label = { Text("Nome") }, modifier = Modifier.fillMaxWidth())
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

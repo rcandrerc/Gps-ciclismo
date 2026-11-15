@@ -62,8 +62,16 @@ private val dateFmt = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale("pt", "BR"))
 fun HistoryScreen(app: GpsCiclismoApp, nav: NavController) {
     val flow = remember { app.db.rides().rides() }
     val rides by flow.collectAsStateWithLifecycle(emptyList())
+    val cloud by app.cloud.state.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { app.cloud.requestSync() } // traz o que foi feito no outro aparelho
     Column(Modifier.fillMaxSize()) {
         BackBar("Histórico", { nav.popBackStack() })
+        if (app.cloud.signedIn) Text(
+            if (cloud.syncing) "Sincronizando com a nuvem…" else cloud.message ?: "Conta: ${cloud.email}",
+            Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            style = MaterialTheme.typography.bodySmall,
+            color = if (cloud.error) Red else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         LazyColumn(
             Modifier.fillMaxSize().padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -161,7 +169,11 @@ fun RideDetailScreen(app: GpsCiclismoApp, id: Long, onBack: () -> Unit) {
         confirmButton = {
             TextButton(onClick = {
                 confirmDelete = false
-                scope.launch { app.db.rides().delete(id); onBack() }
+                scope.launch {
+                    ride?.uuid?.let { app.cloud.forgetRide(it) }
+                    app.db.rides().delete(id)
+                    onBack()
+                }
             }) { Text("Excluir") }
         },
         dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancelar") } },

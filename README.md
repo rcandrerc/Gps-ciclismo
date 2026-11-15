@@ -42,10 +42,20 @@ app/src/main/java/br/com/gpsciclismo/
 
 Testes: `./gradlew testDebugUnitTest`.
 
+## Conta e nuvem (Firebase)
+
+Os treinos e o perfil ficam no aparelho e, com conta, sincronizam pelo Firebase
+(login por e-mail/senha + Firestore, via API REST, sem Google Play Services, então funciona no tablet Amazon Fire).
+
+- Estrutura: `users/{uid}` (perfil), `users/{uid}/rides/{uuid}` (resumo), `.../points/{n}` (pontos compactados).
+- Regras do Firestore: [`firebase/firestore.rules`](firebase/firestore.rules) (cada pessoa só vê a própria pasta).
+- O APK recebe a configuração pelos secrets do GitHub Actions `FIREBASE_API_KEY` e `FIREBASE_PROJECT_ID`
+  (para gerar localmente: `-PfirebaseApiKey=... -PfirebaseProjectId=...`). Sem eles o app funciona só no aparelho.
+
 ## Próximos passos
 
 - Perguntar por voz / botão do fone para ouvir o resumo na hora
 - Exportar GPX/FIT (Strava, TrainingPeaks)
 - Gráficos de potência/FC e tempo em cada zona
 - Auto-pausa
-- Login e sincronização para compartilhar com o treinador
+- Compartilhar treinos com o treinador

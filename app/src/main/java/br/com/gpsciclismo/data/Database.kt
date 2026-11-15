@@ -47,6 +47,8 @@ data class RideEntity(
     /** Teste de FTP: média de potência do esforço e segundos com potência. */
     val testAvgPower: Int? = null,
     val testSec: Int? = null,
+    /** Quando foi enviado para a nuvem (null = ainda não subiu). */
+    val syncedAt: Long? = null,
 )
 
 @Entity(
@@ -97,6 +99,23 @@ interface RideDao {
 
     @Query("DELETE FROM RideEntity WHERE id = :id")
     suspend fun delete(id: Long)
+
+    // ---- nuvem ----
+    @Query("SELECT * FROM RideEntity WHERE endedAt IS NOT NULL AND syncedAt IS NULL ORDER BY startedAt")
+    suspend fun unsynced(): List<RideEntity>
+
+    @Query("SELECT * FROM RideEntity WHERE endedAt IS NOT NULL")
+    suspend fun finished(): List<RideEntity>
+
+    @Query("UPDATE RideEntity SET syncedAt = :at WHERE id = :id")
+    suspend fun markSynced(id: Long, at: Long)
+
+    /** Outra conta entrou neste aparelho: os treinos daqui sobem de novo para ela. */
+    @Query("UPDATE RideEntity SET syncedAt = NULL")
+    suspend fun clearSynced()
+
+    @Query("SELECT uuid FROM RideEntity")
+    suspend fun uuids(): List<String>
 }
 
 @Dao
@@ -115,7 +134,7 @@ interface WorkoutDao {
 
 @Database(
     entities = [RideEntity::class, RidePointEntity::class, WorkoutEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -125,7 +144,7 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "gps-ciclismo.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
 
         /** Versão 2: nota/aproveitamento do treino. Mantém o histórico. */
@@ -143,6 +162,13 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE RideEntity ADD COLUMN testAvgPower INTEGER")
                 db.execSQL("ALTER TABLE RideEntity ADD COLUMN testSec INTEGER")
                 db.execSQL("ALTER TABLE RidePointEntity ADD COLUMN block INTEGER")
+            }
+        }
+
+        /** Versão 4: marca de quando o treino subiu para a nuvem. */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE RideEntity ADD COLUMN syncedAt INTEGER")
             }
         }
     }

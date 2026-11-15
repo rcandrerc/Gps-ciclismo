@@ -18,6 +18,11 @@ android {
         val run = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
         versionCode = run
         versionName = "0.1.$run"
+        // Firebase (conta e nuvem). Vem dos secrets do GitHub Actions; sem eles o app funciona só no aparelho.
+        val fbKey = System.getenv("FIREBASE_API_KEY") ?: (project.findProperty("firebaseApiKey") as String?) ?: ""
+        val fbProject = System.getenv("FIREBASE_PROJECT_ID") ?: (project.findProperty("firebaseProjectId") as String?) ?: ""
+        buildConfigField("String", "FIREBASE_API_KEY", "\"${fbKey.trim()}\"")
+        buildConfigField("String", "FIREBASE_PROJECT_ID", "\"${fbProject.trim()}\"")
         buildConfigField("String", "UPDATE_BASE_URL", "\"https://github.com/rcandrerc/Gps-ciclismo/releases/download/ultima-versao\"")
     }
 

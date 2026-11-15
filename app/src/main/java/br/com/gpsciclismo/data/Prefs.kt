@@ -45,7 +45,7 @@ data class RideSetup(val indoor: Boolean = false, val erg: Boolean = false) {
 
 data class SavedSensor(val kind: SensorKind, val address: String, val name: String)
 
-/** Perfil, configurações e sensores pareados, guardados só no celular. */
+/** Perfil, configurações e sensores pareados, guardados no aparelho (o perfil também vai para a nuvem). */
 class Prefs(context: Context) {
     private val sp = context.getSharedPreferences("gps_ciclismo", Context.MODE_PRIVATE)
 
@@ -65,9 +65,24 @@ class Prefs(context: Context) {
         ftp = sp.getInt("ftp", 200),
     )
 
+    /** Quando o perfil foi alterado pela última vez (0 = nunca), para saber qual lado vale na nuvem. */
+    val profileUpdatedAt: Long get() = sp.getLong("profileUpdatedAt", 0L)
+
+    /** Chamado depois de cada alteração feita aqui no aparelho (a nuvem usa para subir o perfil). */
+    var onProfileChanged: (() -> Unit)? = null
+
     fun saveProfile(p: Profile) {
+        writeProfile(p, System.currentTimeMillis())
+        onProfileChanged?.invoke()
+    }
+
+    /** Perfil que veio da nuvem: grava com a data de lá, sem disparar novo envio. */
+    fun applyRemoteProfile(p: Profile, updatedAt: Long) = writeProfile(p, updatedAt)
+
+    private fun writeProfile(p: Profile, updatedAt: Long) {
         sp.edit().putString("name", p.name).putFloat("weightKg", p.weightKg.toFloat())
-            .putInt("heightCm", p.heightCm).putInt("ftp", p.ftp).apply()
+            .putInt("heightCm", p.heightCm).putInt("ftp", p.ftp)
+            .putLong("profileUpdatedAt", updatedAt).apply()
         _profile.value = p
     }
 
