@@ -1,5 +1,6 @@
 package br.com.gpsciclismo.ui
 
+import br.com.gpsciclismo.BuildConfig
 import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -217,6 +218,20 @@ fun HomeScreen(app: GpsCiclismoApp, nav: NavController) {
             HomeTile("Histórico", Icons.Filled.History, Modifier.weight(1f)) { nav.navigate("history") }
             HomeTile("Perfil", Icons.Filled.Person, Modifier.weight(1f)) { nav.navigate("profile") }
         }
+        // Conta na nuvem: atalho bem à vista enquanto não entrou.
+        val cloud by app.cloud.state.collectAsStateWithLifecycle()
+        if (app.cloud.configured) {
+            if (cloud.email == null) {
+                OutlinedButton(
+                    onClick = { nav.navigate("profile") },
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = MaterialTheme.shapes.large,
+                ) { Text("Entrar com Google (salvar treinos na nuvem)") }
+            } else {
+                Text("Nuvem: ${cloud.email}", style = MaterialTheme.typography.bodySmall, color = cs.onSurfaceVariant)
+            }
+        }
+        Text("Versão ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.labelSmall, color = cs.onSurfaceVariant)
     }
 }
 
