@@ -1,6 +1,7 @@
 package br.com.gpsciclismo.data
 
 import android.content.Context
+import android.net.Uri
 import androidx.room.withTransaction
 import br.com.gpsciclismo.BuildConfig
 import br.com.gpsciclismo.data.CloudCodec.getBytes
@@ -30,6 +31,7 @@ import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 
 /** O que a tela de conta mostra. */
@@ -42,7 +44,7 @@ data class CloudState(
 )
 
 /**
- * Conta e sincronização com o Firebase (Authentication por e-mail/senha + Firestore),
+ * Conta e sincronização com o Firebase (login com Google + Firestore),
  * usando só a API REST. Assim funciona igual no celular e no tablet Amazon Fire,
  * que não tem os serviços do Google Play.
  *
@@ -72,39 +74,42 @@ class CloudSync(context: Context, private val db: AppDatabase, private val prefs
 
     // ------------------------------------------------------------------ conta
 
-    /** Entra com e-mail e senha. Retorna a mensagem de erro, ou null se deu certo. */
-    suspend fun signIn(email: String, password: String): String? = auth("accounts:signInWithPassword", email, password)
-
-    /** Cria a conta e já entra. */
-    suspend fun signUp(email: String, password: String): String? = auth("accounts:signUp", email, password)
-
-    suspend fun resetPassword(email: String): String? = withContext(Dispatchers.IO) {
-        if (!configured) return@withContext NOT_CONFIGURED
-        try {
-            val body = buildJsonObject { put("requestType", "PASSWORD_RESET"); put("email", email.trim()) }
-            val r = http("POST", "$AUTH/accounts:sendOobCode?key=$apiKey", body.toString())
-            if (r.ok) null else authError(r)
-        } catch (e: IOException) {
-            OFFLINE
-        }
+    /**
+     * Endereço da página de login com Google (abre no navegador do aparelho).
+     * Funciona também no tablet Fire, que não tem os serviços do Google Play:
+     * a página faz o login pelo Firebase e devolve o app com gpsciclismo://auth.
+     */
+    fun googleLoginUrl(): String {
+        val state = UUID.randomUUID().toString()
+        sp.edit().putString("loginState", state).apply()
+        val q = listOf("k" to apiKey, "p" to projectId, "s" to state)
+            .joinToString("&") { (k, v) -> k + "=" + URLEncoder.encode(v, "UTF-8") }
+        return "${BuildConfig.LOGIN_PAGE_URL}?$q"
     }
 
-    fun signOut() {
-        sp.edit().remove("uid").remove("email").remove("idToken").remove("idExp").remove("refreshToken")
-            .remove("pendingDeletes").apply()
-        _state.value = CloudState()
-    }
-
-    private suspend fun auth(endpoint: String, email: String, password: String): String? = withContext(Dispatchers.IO) {
+    /** Volta da página de login (gpsciclismo://auth#rt=...&s=...). Retorna a mensagem de erro, ou null. */
+    suspend fun completeGoogleLogin(uri: Uri): String? = withContext(Dispatchers.IO) {
         if (!configured) return@withContext NOT_CONFIGURED
-        try {
-            val body = buildJsonObject {
-                put("email", email.trim()); put("password", password); put("returnSecureToken", true)
-            }
-            val r = http("POST", "$AUTH/$endpoint?key=$apiKey", body.toString())
-            if (!r.ok) return@withContext authError(r)
+        val params = (uri.fragment ?: uri.query ?: "").split('&').mapNotNull {
+            val i = it.indexOf('='); if (i <= 0) null else it.substring(0, i) to Uri.decode(it.substring(i + 1))
+        }.toMap()
+        val expected = sp.getString("loginState", null)
+        if (expected == null || params["s"] != expected) return@withContext "Login não reconhecido. Toque em Entrar com Google de novo."
+        val rt = params["rt"] ?: return@withContext "O login não terminou. Tenta de novo."
+        sp.edit().remove("loginState").apply()
+        val result = try {
+            run<String?> login@{
+            val form = "grant_type=refresh_token&refresh_token=" + URLEncoder.encode(rt, "UTF-8")
+            val r = http("POST", "$TOKEN?key=$apiKey", form, contentType = "application/x-www-form-urlencoded")
+            if (!r.ok) return@login "O Google não confirmou o login (${errorMessage(r.body)}). Tenta de novo."
             val o = json.parseToJsonElement(r.body).jsonObject
-            val uid = o.s("localId") ?: return@withContext "Resposta estranha do Firebase. Tenta de novo."
+            val uid = o.s("user_id") ?: return@login "Resposta estranha do Firebase. Tenta de novo."
+            val idTok = o.s("id_token") ?: return@login "Resposta estranha do Firebase. Tenta de novo."
+            // E-mail da conta, só para mostrar na tela.
+            val look = http("POST", "$AUTH/accounts:lookup?key=$apiKey", buildJsonObject { put("idToken", idTok) }.toString())
+            val email = if (look.ok) runCatching {
+                json.parseToJsonElement(look.body).jsonObject["users"]!!.jsonArray[0].jsonObject.s("email")
+            }.getOrNull() else null
             // Outra conta neste aparelho: os treinos daqui sobem também para ela.
             if (sp.getString("lastUid", null) != uid) {
                 db.rides().clearSynced()
@@ -112,33 +117,28 @@ class CloudSync(context: Context, private val db: AppDatabase, private val prefs
             }
             sp.edit()
                 .putString("uid", uid).putString("lastUid", uid)
-                .putString("email", o.s("email") ?: email.trim())
-                .putString("idToken", o.s("idToken")).putString("refreshToken", o.s("refreshToken"))
-                .putLong("idExp", System.currentTimeMillis() + (o.s("expiresIn")?.toLongOrNull() ?: 3600L) * 1000)
+                .putString("email", email ?: "conta Google")
+                .putString("idToken", idTok).putString("refreshToken", o.s("refresh_token") ?: rt)
+                .putLong("idExp", System.currentTimeMillis() + (o.s("expires_in")?.toLongOrNull() ?: 3600L) * 1000)
                 .apply()
-            _state.value = CloudState(email = sp.getString("email", null), lastSync = sp.getLong("lastSync", 0L))
-            requestSync()
             null
+            }
         } catch (e: IOException) {
             OFFLINE
         }
+        if (result == null) {
+            _state.value = CloudState(email = sp.getString("email", null), lastSync = sp.getLong("lastSync", 0L))
+            requestSync()
+        } else {
+            _state.value = _state.value.copy(message = result, error = true)
+        }
+        result
     }
 
-    private fun authError(r: Resp): String {
-        val code = errorMessage(r.body).substringBefore(' ').substringBefore(':').trim()
-        return when (code) {
-            "EMAIL_EXISTS" -> "Esse e-mail já tem conta. Toque em Entrar."
-            "INVALID_LOGIN_CREDENTIALS", "INVALID_PASSWORD", "EMAIL_NOT_FOUND" -> "E-mail ou senha incorretos."
-            "INVALID_EMAIL" -> "E-mail inválido."
-            "WEAK_PASSWORD" -> "Senha fraca: use pelo menos 6 caracteres."
-            "MISSING_PASSWORD" -> "Digite a senha."
-            "TOO_MANY_ATTEMPTS_TRY_LATER" -> "Muitas tentativas. Espera uns minutos e tenta de novo."
-            "USER_DISABLED" -> "Esta conta foi desativada."
-            "OPERATION_NOT_ALLOWED", "CONFIGURATION_NOT_FOUND" ->
-                "O login por e-mail/senha não está ativado no Firebase (Authentication > Sign-in method)."
-            "API_KEY_INVALID" -> "Chave do Firebase inválida no APK."
-            else -> "Não deu certo ($code)."
-        }
+    fun signOut() {
+        sp.edit().remove("uid").remove("email").remove("idToken").remove("idExp").remove("refreshToken")
+            .remove("pendingDeletes").apply()
+        _state.value = CloudState()
     }
 
     /** Token de acesso válido, renovando quando passa de 1 h. */

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GPS Ciclismo · Entrar</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+         background: #0B0F14; color: #E6EBF0; font: 16px/1.5 system-ui, sans-serif; }
+  main { max-width: 360px; padding: 24px 16px; text-align: center; }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  p { color: #94A0AC; margin: 8px 0 20px; }
+  button, a.btn { display: block; width: 100%; box-sizing: border-box; padding: 14px; border: 0; border-radius: 12px;
+         font-size: 17px; font-weight: 600; cursor: pointer; text-decoration: none; margin-top: 12px; }
+  .google { background: #fff; color: #1f1f1f; }
+  .app { background: #3FE0C5; color: #00211C; }
+  .err { color: #FF5C5C; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>GPS Ciclismo</h1>
+  <p id="msg">Entre com sua conta Google para guardar os treinos na nuvem.</p>
+  <button id="go" class="google">Entrar com Google</button>
+  <a id="back" class="btn app" hidden>Voltar para o app</a>
+</main>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
+           setPersistence, browserSessionPersistence, signOut }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const q = new URLSearchParams(location.search);
+  const key = q.get("k"), project = q.get("p"), state = q.get("s");
+  const msg = document.getElementById("msg"), go = document.getElementById("go"), back = document.getElementById("back");
+  const fail = (t) => { msg.textContent = t; msg.className = "err"; go.hidden = false; };
+
+  if (!key || !project || !state) {
+    fail("Abra esta página pelo app (Perfil > Conta na nuvem > Entrar com Google).");
+    go.hidden = true;
+  } else {
+    const auth = getAuth(initializeApp({ apiKey: key, authDomain: `${project}.firebaseapp.com`, projectId: project }));
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
+
+    // Devolve o login para o app. O app confere o "s" (gerado por ele) antes de aceitar.
+    const done = async (user) => {
+      const link = `gpsciclismo://auth?rt=${encodeURIComponent(user.refreshToken)}&s=${encodeURIComponent(state)}`;
+      await signOut(auth).catch(() => {}); // não deixa a sessão guardada no navegador
+      msg.textContent = `Pronto, ${user.email || "conta Google"}. Volte para o app.`;
+      msg.className = "";
+      go.hidden = true;
+      back.href = link;
+      back.hidden = false;
+      location.href = link;
+    };
+
+    await setPersistence(auth, browserSessionPersistence).catch(() => {});
+    getRedirectResult(auth).then((r) => { if (r && r.user) done(r.user); })
+      .catch((e) => fail("Não deu certo: " + (e.code || e.message)));
+
+    go.addEventListener("click", async () => {
+      go.disabled = true;
+      try {
+        const r = await signInWithPopup(auth, provider);
+        await done(r.user);
+      } catch (e) {
+        if (["auth/popup-blocked", "auth/operation-not-supported-in-this-environment"].includes(e.code)) {
+          await signInWithRedirect(auth, provider);
+        } else if (e.code === "auth/popup-closed-by-user" || e.code === "auth/cancelled-popup-request") {
+          msg.textContent = "Login cancelado. Toque de novo para entrar.";
+        } else {
+          fail("Não deu certo: " + (e.code || e.message));
+        }
+      } finally {
+        go.disabled = false;
+      }
+    });
+  }
+</script>
+</body>
+</html>

@@ -45,12 +45,15 @@ Testes: `./gradlew testDebugUnitTest`.
 ## Conta e nuvem (Firebase)
 
 Os treinos e o perfil ficam no aparelho e, com conta, sincronizam pelo Firebase
-(login por e-mail/senha + Firestore, via API REST, sem Google Play Services, então funciona no tablet Amazon Fire).
+(projeto `gps-ciclismo-92871`: login com Google + Firestore, via API REST, sem Google Play Services,
+então funciona no tablet Amazon Fire).
 
+- Login com Google: o app abre [`docs/login.html`](docs/login.html) (GitHub Pages) no navegador; a página entra
+  pelo Firebase e devolve o app com `gpsciclismo://auth`. O app confere um código de uso único antes de aceitar.
 - Estrutura: `users/{uid}` (perfil), `users/{uid}/rides/{uuid}` (resumo), `.../points/{n}` (pontos compactados).
 - Regras do Firestore: [`firebase/firestore.rules`](firebase/firestore.rules) (cada pessoa só vê a própria pasta).
-- O APK recebe a configuração pelos secrets do GitHub Actions `FIREBASE_API_KEY` e `FIREBASE_PROJECT_ID`
-  (para gerar localmente: `-PfirebaseApiKey=... -PfirebaseProjectId=...`). Sem eles o app funciona só no aparelho.
+- A configuração de cliente do Firebase (chave de API web e ID do projeto) fica em `app/build.gradle.kts`.
+  Ela não é segredo: vai dentro de todo APK; quem protege os dados são as regras do Firestore.
 
 ## Próximos passos
 

@@ -1,6 +1,10 @@
 package br.com.gpsciclismo.ui
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,6 +30,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val app = application as GpsCiclismoApp
+        handleLogin(intent)
         setContent {
             AppTheme {
                 // Android 15 desenha atrás das barras do sistema: afasta o conteúdo delas.
@@ -59,6 +64,23 @@ class MainActivity : ComponentActivity() {
                 }
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleLogin(intent)
+    }
+
+    /** Volta da página de login com Google: gpsciclismo://auth?rt=...&s=... */
+    private fun handleLogin(intent: Intent?) {
+        val uri = intent?.data ?: return
+        if (uri.scheme != "gpsciclismo" || uri.host != "auth") return
+        setIntent(Intent(intent).setData(null)) // não processa de novo ao girar a tela
+        val app = application as GpsCiclismoApp
+        lifecycleScope.launch {
+            val err = app.cloud.completeGoogleLogin(uri)
+            Toast.makeText(this@MainActivity, err ?: "Conectado! Sincronizando os treinos…", Toast.LENGTH_LONG).show()
         }
     }
 }
