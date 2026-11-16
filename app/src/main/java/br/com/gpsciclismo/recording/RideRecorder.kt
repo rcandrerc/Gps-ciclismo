@@ -1,5 +1,6 @@
 package br.com.gpsciclismo.recording
 
+import br.com.gpsciclismo.GpsCiclismoApp
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -272,6 +273,7 @@ class RideRecorder(
         coach = null
         _live.value = LiveRide()
         context.stopService(Intent(context, RideService::class.java))
+        (context.applicationContext as? GpsCiclismoApp)?.cloud?.requestSync() // sobe o treino para a nuvem
         return rideId
     }
 
