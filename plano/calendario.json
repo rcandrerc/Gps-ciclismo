@@ -1,6 +1,6 @@
 {
  "name": "Volta ao FTP - mês 1 (4x40 min, foco FTP)",
- "updated": "2026-11-15",
+ "updated": "2026-11-17",
  "days": [
   {
    "date": "2026-11-14",
@@ -135,9 +135,14 @@
   },
   {
    "date": "2026-11-17",
+   "title": "Descanso",
+   "notes": "Treino de hoje passou para quarta (18/11)."
+  },
+  {
+   "date": "2026-11-18",
    "title": "Sweet spot 3x6 min a 185 W",
    "where": "rolo",
-   "notes": "Readaptação: forte mas sustentável, dá pra falar frases curtas. Recupera 3 min em Z2.",
+   "notes": "Readaptação: forte mas sustentável, dá pra falar frases curtas. Recupera 3 min em Z2. (Remanejado de terça 17/11.)",
    "workout": {
     "name": "Sweet spot 3x6 min a 185 W",
     "blocks": [
@@ -215,11 +220,12 @@
    }
   },
   {
-   "date": "2026-11-18",
-   "title": "Descanso"
+   "date": "2026-11-19",
+   "title": "Descanso",
+   "notes": "Semana remanejada: o sweet spot 2x10 passou para sexta."
   },
   {
-   "date": "2026-11-19",
+   "date": "2026-11-20",
    "title": "Sweet spot 2x10 min a 185 W",
    "where": "rolo",
    "notes": "Blocos mais longos no mesmo ritmo. Recupera 4 min em Z2.",
@@ -286,14 +292,49 @@
    }
   },
   {
-   "date": "2026-11-20",
-   "title": "Descanso"
+   "date": "2026-11-21",
+   "title": "Recuperação Z2 leve 40 min",
+   "where": "rolo",
+   "notes": "Z2 contínuo, cadência solta. Semana remanejada: o leve veio para sábado para não emendar dois treinos fortes (sexta e domingo).",
+   "workout": {
+    "name": "Recuperação Z2 leve 40 min",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      }
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 1680,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      }
+     }
+    ]
+   }
   },
   {
-   "date": "2026-11-21",
+   "date": "2026-11-22",
    "title": "Limiar 3x5 min a 200 W",
    "where": "rolo",
-   "notes": "Primeiro contato com o limiar (~95% do FTP). Recupera 3 min em Z2.",
+   "notes": "Primeiro contato com o limiar (~95% do FTP). Recupera 3 min em Z2. Semana remanejada: o limiar de sábado veio para domingo.",
    "workout": {
     "name": "Limiar 3x5 min a 200 W",
     "blocks": [
@@ -355,45 +396,6 @@
      },
      {
       "durationSec": 210,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 240,
-      "target": {
-       "type": "zone",
-       "zone": 1
-      }
-     }
-    ]
-   }
-  },
-  {
-   "date": "2026-11-22",
-   "title": "Recuperação Z2 leve 40 min",
-   "where": "rolo",
-   "notes": "Z2 contínuo, cadência solta. Recupera do treino de sábado e mantém a base aeróbica que sustenta o FTP.",
-   "workout": {
-    "name": "Recuperação Z2 leve 40 min",
-    "blocks": [
-     {
-      "durationSec": 180,
-      "target": {
-       "type": "zone",
-       "zone": 1
-      }
-     },
-     {
-      "durationSec": 300,
-      "target": {
-       "type": "watts",
-       "watts": 145
-      }
-     },
-     {
-      "durationSec": 1680,
       "target": {
        "type": "watts",
        "watts": 145
