@@ -46,6 +46,9 @@ import java.util.UUID
 
 enum class RecStatus { IDLE, RECORDING, PAUSED }
 
+/** Espera máxima pela frase de abertura da contagem (voz lenta ou ainda carregando). */
+private const val INTRO_MAX_SEC = 6
+
 data class LiveRide(
     val status: RecStatus = RecStatus.IDLE,
     val rideId: Long = 0,
@@ -80,6 +83,8 @@ data class LiveRide(
     val ergOn: Boolean = false,
     /** Ajuste de intensidade em watts (botões −10/+10 W). */
     val offsetW: Int = 0,
+    /** Contagem regressiva antes de (re)começar: número na tela, ou null. */
+    val countdown: Int? = null,
 )
 
 /** Grava o treino: GPS + sensores a cada segundo, treinador por voz e banco de dados. */
@@ -125,6 +130,45 @@ class RideRecorder(
     private var startedAt = 0L
     private val buffer = mutableListOf<RidePointEntity>()
     private var lastPausedAt: Int? = null
+
+    // Contagem regressiva ao dar play e ao continuar ("André, nosso treino irá começar em 5, 4, 3, 2, 1").
+    private var countdownLeft = 0
+    /** Segundos esperando a frase de abertura terminar antes dos números (máx. [INTRO_MAX_SEC]). */
+    private var introWait = 0
+    @Volatile private var introDone = true
+    /** Frase depois do "1" (ex.: "Vamos lá"). */
+    private var countdownGo: String? = null
+
+    /** Primeiro nome do ciclista para as frases (vazio = sem nome). */
+    private fun firstName() = prefs.profile.value.name.trim().substringBefore(' ')
+
+    private fun startCountdown(from: Int, intro: String, go: String?) {
+        countdownLeft = from
+        countdownGo = go
+        introWait = 0
+        if (autoVoice) {
+            introDone = false
+            voice?.speak(intro) { introDone = true }
+        } else introDone = true
+        _live.value = _live.value.copy(countdown = from)
+    }
+
+    /** Um segundo da contagem. true = ainda contando (o treino não anda). */
+    private fun countdownTick(): Boolean {
+        if (countdownLeft <= 0) return false
+        if (!introDone && introWait < INTRO_MAX_SEC) { introWait++; return true }
+        introDone = true
+        val n = countdownLeft
+        if (autoVoice) voice?.speak("$n")
+        countdownLeft--
+        _live.value = _live.value.copy(countdown = n)
+        if (countdownLeft == 0) {
+            // o "1" ainda aparece neste segundo; o treino começa no próximo
+            countdownGo?.let { g -> if (autoVoice) voice?.speak(g) }
+            countdownGo = null
+        }
+        return true
+    }
 
     private val locationCallback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
@@ -179,6 +223,7 @@ class RideRecorder(
                 repeatEverySec = coachSettings.repeatEverySec,
                 // a média dos avisos ainda carrega o bloco anterior por alguns segundos
                 graceSec = maxOf(10, coachSettings.powerAlertSec + 2),
+                name = prefs.profile.value.name,
             ))
         }
         sensors.connectSaved()
@@ -199,7 +244,12 @@ class RideRecorder(
             }
             _live.value = _live.value.copy(rideId = id)
         }
+        countdownLeft = 0; countdownGo = null; introDone = true
         if (plan == null && autoVoice) voice?.speak("Treino iniciado. Um toque no botão do fone dá o resumo, dois toques para perguntar.")
+        if (plan != null) {
+            val n = firstName()
+            startCountdown(5, if (n.isEmpty()) "Nosso treino irá começar em" else "$n, nosso treino irá começar em", null)
+        }
         ticker = scope.launch {
             var next = System.currentTimeMillis()
             while (isActive) {
@@ -215,14 +265,17 @@ class RideRecorder(
         stats.breakSegment()
         // ERG: solta a carga na pausa (estrada plana); o bloco volta sozinho no próximo segundo após continuar.
         if (trainerUsed && coach != null) sensors.setTrainerCommand(TrainerCommand.Flat)
-        _live.value = _live.value.copy(status = RecStatus.PAUSED, ergWatts = null)
+        countdownLeft = 0; countdownGo = null; introDone = true
+        _live.value = _live.value.copy(status = RecStatus.PAUSED, ergWatts = null, countdown = null)
         voice?.speak("Treino pausado.", urgent = true)
     }
 
     fun resume() {
         if (_live.value.status != RecStatus.PAUSED) return
         _live.value = _live.value.copy(status = RecStatus.RECORDING)
-        voice?.speak("Continuando.", urgent = true)
+        voice?.stopSpeaking()
+        val n = firstName()
+        startCountdown(3, "Voltando em", if (n.isEmpty()) "Vamos lá." else "Vamos lá, $n.")
     }
 
     /** Finaliza e salva. Retorna o id do treino salvo. */
@@ -265,7 +318,15 @@ class RideRecorder(
         }
         commander?.release()
         commander = null
-        val grade = score.pct?.let { " Aproveitamento $it por cento, ${WorkoutScore.stars(it)} estrelas." } ?: ""
+        val n = firstName().let { if (it.isEmpty()) "" else ", $it" }
+        val grade = score.pct?.let {
+            " Aproveitamento $it por cento, ${WorkoutScore.stars(it)} estrelas. " +
+                when {
+                    it >= 80 -> "Mandou bem$n."
+                    it < 60 -> "Hoje foi mais difícil, mas o importante é ter feito$n."
+                    else -> "Bom treino$n."
+                }
+        } ?: ""
         voice?.speak("Treino salvo. ${summaryText()}$grade")
         val v = voice
         scope.launch { delay(15_000); v?.shutdown() }
@@ -308,6 +369,10 @@ class RideRecorder(
             _live.value = cur.copy(powerAvg = avgShown, powerNow = pw, heartRate = r.heartRateNow(now), cadence = r.cadenceNow(now))
             return
         }
+        if (countdownTick()) {
+            _live.value = _live.value.copy(powerAvg = avgShown, powerNow = pw, heartRate = r.heartRateNow(now), cadence = r.cadenceNow(now))
+            return
+        }
         val elapsed = cur.elapsedSec + 1
         val speed = currentSpeed(now)
         val hr = r.heartRateNow(now)
@@ -316,14 +381,13 @@ class RideRecorder(
         if (setup.indoor) stats.addIndoorSecond(speed)
 
         coach?.let { c ->
-            val phrases = c.tick(elapsed - 1, avgAlert)
-            phrases.forEach { p ->
-                when {
-                    p.startsWith("Tá abaixo") -> voice?.beep(high = true)
-                    p.startsWith("Tá muito acima") -> voice?.beep(high = false)
-                }
-                if (autoVoice) voice?.speak(p)
+            val phrases = c.tick(elapsed - 1, avgAlert, cad)
+            when (c.alertNow) {
+                PowerCoach.Status.BELOW -> voice?.beep(high = true)
+                PowerCoach.Status.ABOVE -> voice?.beep(high = false)
+                else -> {}
             }
+            if (autoVoice) phrases.forEach { voice?.speak(it) }
         }
         coach?.state?.let { st ->
             if (st.blockIndex != blockIndex) { blockIndex = st.blockIndex; blockPowerSum = 0; blockPowerN = 0; blockSec = 0 }
@@ -374,6 +438,7 @@ class RideRecorder(
             testSec = ftpTest.sec,
             ergOn = coach?.state?.let { ergBlock == it.blockIndex && (ergOverride ?: (ergUser && it.erg)) } ?: false,
             offsetW = coach?.offsetW ?: 0,
+            countdown = null,
         )
     }
 

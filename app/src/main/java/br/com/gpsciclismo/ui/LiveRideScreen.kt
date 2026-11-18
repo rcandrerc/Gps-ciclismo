@@ -2,6 +2,7 @@ package br.com.gpsciclismo.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -75,6 +76,7 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
         if (live.status == RecStatus.IDLE && !stopping) nav.navigate("home") { popUpTo(0) }
     }
 
+    Box(Modifier.fillMaxSize()) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val wide = maxWidth >= 840.dp   // tablet deitado: duas colunas
         val roomy = maxWidth >= 600.dp  // tablet em pé: mais campos por linha
@@ -115,6 +117,9 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
             }
         }
     }
+    // Contagem regressiva por cima de tudo (vale também para a cena do tablet deitado).
+    live.countdown?.let { CountdownOverlay(it) }
+    }
 
     if (confirmStop) AlertDialog(
         onDismissRequest = { confirmStop = false },
@@ -132,6 +137,18 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
         },
         dismissButton = { TextButton(onClick = { confirmStop = false }) { Text("Cancelar") } },
     )
+}
+
+/** Número grande da contagem antes de começar / continuar. */
+@Composable
+private fun CountdownOverlay(n: Int) {
+    Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.55f)), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("PREPARA", color = Color.White.copy(alpha = 0.8f), style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold)
+            Text("$n", color = Green, fontSize = 160.sp, fontWeight = FontWeight.Bold, style = Tabular)
+        }
+    }
 }
 
 @Composable
