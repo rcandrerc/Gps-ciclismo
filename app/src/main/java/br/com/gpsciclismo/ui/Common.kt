@@ -30,7 +30,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import br.com.gpsciclismo.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import br.com.gpsciclismo.core.PowerCoach
@@ -86,6 +89,12 @@ private val shapes = Shapes(
 
 /** Números com largura fixa: o valor não "dança" quando muda a cada segundo. */
 val Tabular = TextStyle(fontFeatureSettings = "tnum")
+
+/** Fonte condensada dos números grandes (Barlow Condensed, licença OFL, embutida no app). */
+val Condensed = FontFamily(
+    Font(R.font.barlow_condensed_semibold, FontWeight.SemiBold),
+    Font(R.font.barlow_condensed_bold, FontWeight.Bold),
+)
 
 private val typography = Typography().let { t ->
     t.copy(

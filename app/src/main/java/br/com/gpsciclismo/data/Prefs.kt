@@ -68,6 +68,11 @@ class Prefs(context: Context) {
     /** Quando o perfil foi alterado pela última vez (0 = nunca), para saber qual lado vale na nuvem. */
     val profileUpdatedAt: Long get() = sp.getLong("profileUpdatedAt", 0L)
 
+    /** No treino indoor: mostrar a cena 2D (ciclista na estrada) em vez do painel de números. */
+    var sceneView: Boolean
+        get() = sp.getBoolean("sceneView", true)
+        set(v) { sp.edit().putBoolean("sceneView", v).apply() }
+
     /** Chamado depois de cada alteração feita aqui no aparelho (a nuvem usa para subir o perfil). */
     var onProfileChanged: (() -> Unit)? = null
 
