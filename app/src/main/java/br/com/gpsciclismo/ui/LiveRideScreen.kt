@@ -3,6 +3,9 @@ package br.com.gpsciclismo.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.runtime.saveable.rememberSaveable
+import br.com.gpsciclismo.core.SceneTrack
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.FilledTonalButton
@@ -61,6 +64,12 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
     val scope = rememberCoroutineScope()
     var confirmStop by remember { mutableStateOf(false) }
     var stopping by remember { mutableStateOf(false) }
+    // Cena 2D (ciclista na estrada): padrão no indoor; a escolha fica lembrada.
+    // (o tipo de treino chega um instante depois de abrir a tela, por isso a escolha começa vazia)
+    var sceneChoice by rememberSaveable { mutableStateOf<Boolean?>(null) }
+    val scene = sceneChoice ?: (live.setup.indoor && app.prefs.sceneView)
+    val setScene: (Boolean) -> Unit = { v -> sceneChoice = v; if (live.setup.indoor) app.prefs.sceneView = v }
+    val track = remember(live.workout, profile.ftp, live.offsetW) { SceneTrack.of(live.workout, profile.ftp, live.offsetW) }
 
     LaunchedEffect(live.status) {
         if (live.status == RecStatus.IDLE && !stopping) nav.navigate("home") { popUpTo(0) }
@@ -69,13 +78,15 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
         val wide = maxWidth >= 840.dp   // tablet deitado: duas colunas
         val roomy = maxWidth >= 600.dp  // tablet em pé: mais campos por linha
-        if (wide) {
+        if (wide && scene) {
+            SceneRideView(app, live, profile.ftp, track, onShowPanel = { setScene(false) }, onStop = { confirmStop = true })
+        } else if (wide) {
             Row(Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Column(
                     Modifier.weight(0.42f).fillMaxHeight().verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    RideHeader(app, live)
+                    RideHeader(app, live, scene) { setScene(!scene) }
                     TimeStrip(app, live)
                     PowerPanel(live, numberSize = 96)
                     IntensityControls(app, live)
@@ -92,7 +103,8 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
                 Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(if (roomy) 16.dp else 12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                RideHeader(app, live)
+                RideHeader(app, live, scene) { setScene(!scene) }
+                if (scene) SceneBanner(live, track, Modifier.fillMaxWidth().aspectRatio(16f / 10f))
                 TimeStrip(app, live)
                 PowerPanel(live, numberSize = if (roomy) 96 else 72)
                 IntensityControls(app, live)
@@ -123,8 +135,9 @@ fun LiveRideScreen(app: GpsCiclismoApp, nav: NavController) {
 }
 
 @Composable
-private fun RideHeader(app: GpsCiclismoApp, live: LiveRide) {
+private fun RideHeader(app: GpsCiclismoApp, live: LiveRide, sceneOn: Boolean, onToggleScene: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
+        TextButton(onClick = onToggleScene) { Text(if (sceneOn) "Esconder cena" else "Ver cena") }
         Text(
             live.workout?.name ?: "Pedal livre",
             style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f),
