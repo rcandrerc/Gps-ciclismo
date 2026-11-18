@@ -81,23 +81,51 @@ fun SceneRideView(
                 StatsCard(live, track, u, ::ts, Modifier.weight(0.95f))
             }
             Spacer(Modifier.weight(1f))
-            Row(horizontalArrangement = Arrangement.spacedBy(u * 1.2f), verticalAlignment = Alignment.Bottom) {
-                val btn = max(48.dp, u * 5.4f)
-                WorkoutStrip(live, track, u, Modifier.weight(1f).height(btn))
+            if (track.blockCount > 0) WorkoutStrip(live, track, u, Modifier.fillMaxWidth().height(max(40.dp, u * 4.2f)))
+            Spacer(Modifier.height(u * 1f))
+            // Barra de controles com nome em cada botão, bem visível em cima da cena.
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(u * 0.9f), verticalAlignment = Alignment.CenterVertically) {
+                val h = max(56.dp, u * 5.6f)
+                val fs = ts(2.1f)
                 val coachOn = live.workout != null && live.coach != null && live.coach.status != PowerCoach.Status.FINISHED
-                if (coachOn) RoundBtn(btn, text = "−10", ts = ts(1.9f)) { app.recorder.adjustIntensity(-10) }
                 val paused = live.status == RecStatus.PAUSED
-                RoundBtn(btn, icon = if (paused) Icons.Filled.PlayArrow else Icons.Filled.Pause, tint = if (paused) Amber else Ink) {
-                    if (paused) app.recorder.resume() else app.recorder.pause()
-                }
-                if (coachOn) RoundBtn(btn, text = "+10", ts = ts(1.9f)) { app.recorder.adjustIntensity(10) }
-                if (live.setup.indoor) RoundBtn(btn, text = "ERG", ts = ts(1.7f), tint = if (live.ergOn) Green else Muted) {
-                    app.recorder.toggleErg()
-                }
-                RoundBtn(btn, icon = Icons.Filled.Dashboard, onClick = onShowPanel)
-                RoundBtn(btn, icon = Icons.Filled.Stop, tint = Red, onClick = onStop)
+                if (coachOn) PillBtn("−10 W", h, fs, Modifier.weight(1f)) { app.recorder.adjustIntensity(-10) }
+                PillBtn(
+                    if (paused) "Continuar" else "Pausar", h, fs, Modifier.weight(1.4f),
+                    icon = if (paused) Icons.Filled.PlayArrow else Icons.Filled.Pause,
+                    bg = if (paused) Amber else Color(0xFF2EC4B6), fg = Color(0xFF07211E),
+                ) { if (paused) app.recorder.resume() else app.recorder.pause() }
+                if (coachOn) PillBtn("+10 W", h, fs, Modifier.weight(1f)) { app.recorder.adjustIntensity(10) }
+                if (live.setup.indoor) PillBtn(
+                    if (live.ergOn) "ERG ligado" else "ERG desligado", h, fs, Modifier.weight(1.3f),
+                    fg = if (live.ergOn) Green else Ink,
+                ) { app.recorder.toggleErg() }
+                PillBtn("Painel", h, fs, Modifier.weight(1.1f), icon = Icons.Filled.Dashboard, onClick = onShowPanel)
+                PillBtn("Finalizar", h, fs, Modifier.weight(1.3f), icon = Icons.Filled.Stop, bg = Red, fg = Color.White, onClick = onStop)
             }
         }
+    }
+}
+
+@Composable
+private fun PillBtn(
+    text: String,
+    height: Dp,
+    fontSize: TextUnit,
+    modifier: Modifier = Modifier,
+    icon: ImageVector? = null,
+    bg: Color = Color(0xE6202A40),
+    fg: Color = Ink,
+    onClick: () -> Unit,
+) {
+    val shape = RoundedCornerShape(50)
+    Row(
+        modifier.height(height).clip(shape).background(bg).border(1.dp, Color(0x40FFFFFF), shape)
+            .clickable(onClick = onClick).padding(horizontal = 10.dp),
+        horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (icon != null) Icon(icon, null, tint = fg, modifier = Modifier.size(height * 0.42f))
+        Text(text, color = fg, fontFamily = Condensed, fontWeight = FontWeight.Bold, fontSize = fontSize, maxLines = 1)
     }
 }
 
@@ -282,24 +310,6 @@ private fun WorkoutStrip(live: LiveRide, track: SceneTrack, u: Dp, modifier: Mod
             val hx = size.width * (live.elapsedSec.toFloat() / total).coerceIn(0f, 1f)
             drawRect(Color.White, topLeft = Offset(hx - 1.5.dp.toPx(), -4.dp.toPx()), size = Size(3.dp.toPx(), size.height + 4.dp.toPx()))
         }
-    }
-}
-
-@Composable
-private fun RoundBtn(
-    size: Dp,
-    text: String? = null,
-    icon: ImageVector? = null,
-    ts: TextUnit = TextUnit.Unspecified,
-    tint: Color = Ink,
-    onClick: () -> Unit,
-) {
-    Box(
-        Modifier.size(size).clip(CircleShape).background(GlassBg).border(1.dp, GlassLine, CircleShape).clickable(onClick = onClick),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (icon != null) Icon(icon, null, tint = tint, modifier = Modifier.size(size * 0.45f))
-        else Text(text ?: "", color = tint, fontFamily = Condensed, fontWeight = FontWeight.Bold, fontSize = ts)
     }
 }
 
