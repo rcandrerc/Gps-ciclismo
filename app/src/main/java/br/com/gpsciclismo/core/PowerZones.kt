@@ -93,6 +93,8 @@ data class WorkoutBlock(
     val ftpTest: Boolean = false,
     /** Frase falada no começo do bloco (dica do treino). */
     val note: String? = null,
+    /** Cadência pedida no bloco (rpm); sem valor, o treinador pede 90. */
+    val cadence: Int? = null,
 )
 
 @Serializable

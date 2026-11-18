@@ -66,12 +66,40 @@ class CoreTest {
         }
         val text = said.joinToString("\n") { "${it.first}: ${it.second}" }
         println(text)
-        assertTrue(said.first().second.startsWith("Bloco 1 de 2. 5 minutos a 240 watts"))
+        assertTrue(said.first().second.startsWith("5 minutos a 240 watts"))
+        assertTrue(said[1].second.contains("90"))
         assertNotNull(said.find { it.first == 65 && it.second.contains("Sobe pra 240") })
-        assertNotNull(said.find { it.second.contains("Boa, na zona") })
-        assertNotNull(said.find { it.second.contains("Próximo: 5 minutos a 130 watts") })
+        assertNotNull(said.find { it.second.contains("na zona") || it.second.contains("voltou pra zona") || it.second.contains("agora sim") })
+        assertNotNull(said.find { it.first == 288 }) // fim do bloco forte: incentivo 12 s antes da troca
         assertNotNull(said.find { it.second.contains("Baixa pra 130") })
         assertTrue(said.last().second.contains("Treino concluído"))
+    }
+
+    @Test fun guidedCoachTalksLikeATrainer() {
+        val plan = WorkoutPlan("Limiar", listOf(
+            WorkoutBlock(300, PowerTarget.Zone(1)),
+            WorkoutBlock(300, PowerTarget.Zone(4)),
+            WorkoutBlock(300, PowerTarget.Zone(1)),
+        ))
+        val coach = PowerCoach(plan, PowerCoach.Settings(ftp = 200, name = "André Coutinho"), kotlin.random.Random(7))
+        val said = mutableListOf<Pair<Int, String>>()
+        for (t in 0 until 901) {
+            val p = when { t < 300 -> 90; t < 600 -> 200; else -> 90 }
+            val cad = if (t in 620..700) 70 else 90
+            coach.tick(t, p, cad).forEach { said += t to it }
+        }
+        println(said.joinToString("\n") { "${it.first}: ${it.second}" })
+        assertTrue(said.first().second.startsWith("Zona 1, 5 minutos"))
+        assertTrue(said[1].second.contains("90"))
+        // aviso antes de subir para Z4 (10 s antes) e incentivo no fim do bloco forte (12 s antes)
+        assertNotNull(said.find { it.first == 290 })
+        assertNotNull(said.find { it.first == 450 }) // metade do intervalo forte
+        assertNotNull(said.find { it.first == 588 })
+        assertNotNull(said.find { it.first == 600 && it.second.startsWith("Último bloco") || it.first == 600 && it.second.contains("recupera") || it.first == 600 && it.second.startsWith("Treino forte") })
+        assertNotNull(said.find { it.first in 620..700 && (it.second.contains("adência") || it.second.contains("gira mais")) })
+        assertTrue(said.any { it.second.contains("André") })
+        assertTrue(said.none { it.second.contains("Coutinho") })
+        assertTrue(said.last().second.contains("Treino concluído") || said.last().second.contains("Acabou"))
     }
 
     @Test fun rollingAverageUsesExactlyNSeconds() {
