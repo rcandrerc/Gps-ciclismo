@@ -1,0 +1,123 @@
+{
+ "name": "Modelo: teste de FTP 20 min",
+ "updated": "2026-11-25",
+ "days": [
+  {
+   "date": "2026-12-12",
+   "title": "Teste de FTP 20 min",
+   "where": "rolo",
+   "notes": "Teste de FTP guiado, ~57 min. Comece com ERG ligado: o app segura a carga no aquecimento e solta o rolo sozinho nos 20 min do teste (use as marchas). Ritmo: 5 min a 220 W, 10 min a 225-230 W (se sobrar, sobe para 235-240), 5 min finais com tudo. Acima do alvo não tem aviso. No fim o app calcula o FTP (95% da média dos 20 min) e oferece atualizar o perfil. Depois exporte o treino no Histórico e me mande o CSV.",
+   "workout": {
+    "name": "Teste de FTP 20 min",
+    "blocks": [
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "note": "Teste de FTP. Começa o aquecimento, pedal leve, cadência solta."
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 260
+      },
+      "note": "Tiro 1 de 3. Forte, cadência alta."
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 260
+      },
+      "note": "Tiro 2 de 3."
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 260
+      },
+      "note": "Último tiro."
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      }
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "note": "5 minutos bem forte, para gastar o fôlego curto antes do teste."
+     },
+     {
+      "durationSec": 600,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "note": "10 minutos leves. Respira, bebe água e se prepara."
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 220
+      },
+      "erg": false,
+      "ftpTest": true,
+      "note": "Começou o teste de 20 minutos. O rolo está solto, use as marchas. Sai comedido, uns 220 watts. Passar do alvo está liberado."
+     },
+     {
+      "durationSec": 600,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "erg": false,
+      "ftpTest": true,
+      "note": "Agora segura 225 a 230. Se estiver sobrando, pode ir subindo para 235, 240."
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "free"
+      },
+      "erg": false,
+      "ftpTest": true,
+      "note": "Últimos 5 minutos. Vai com tudo, esvazia o tanque!"
+     },
+     {
+      "durationSec": 600,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Acabou! 10 minutos soltando as pernas."
+     }
+    ]
+   }
+  }
+ ]
+}

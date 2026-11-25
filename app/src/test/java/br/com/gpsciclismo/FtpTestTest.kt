@@ -57,8 +57,10 @@ class FtpTestTest {
         assertTrue(said.any { it.contains("Sobe pra 220") })
     }
 
-    @Test fun calendarHasGuidedFtpTest() {
-        val cal = TrainingCalendar.parse(File("../plano/calendario.json").readText())
+    @Test fun ftpTestTemplateIsGuided() {
+        // Modelo do teste guiado (fora do calendário publicado, para reusar quando marcar o teste)
+        val file = listOf(File("../plano/modelos/teste-ftp-20min.json"), File("plano/modelos/teste-ftp-20min.json")).first { it.exists() }
+        val cal = TrainingCalendar.parse(file.readText())
         val day = cal.day(LocalDate.of(2026, 12, 12))!!
         val plan = day.workout!!
         assertTrue(plan.name.startsWith("Teste de FTP"))

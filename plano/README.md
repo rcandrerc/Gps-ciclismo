@@ -29,3 +29,6 @@ Para mudar o plano basta editar este arquivo e juntar na `main`; não precisa de
   - `"note": "texto"` — frase falada no começo do bloco.
 - `title`, `where` (`rolo` ou `rua`) e `notes` são opcionais.
 - Dia que não aparece na lista fica vazio no calendário.
+
+`modelos/` guarda treinos prontos fora do calendário (ex.: `teste-ftp-20min.json`, o teste de FTP guiado),
+no mesmo formato, para copiar para `calendario.json` quando for marcar.
