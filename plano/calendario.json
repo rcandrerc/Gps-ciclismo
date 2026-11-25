@@ -1,6 +1,6 @@
 {
  "name": "Volta ao FTP - mês 1 (4x40 min, foco FTP)",
- "updated": "2026-11-17",
+ "updated": "2026-11-25",
  "days": [
   {
    "date": "2026-11-14",
@@ -491,7 +491,220 @@
   },
   {
    "date": "2026-11-25",
-   "title": "Descanso"
+   "title": "FTP dinâmico: 4 blocos diferentes (47 min)",
+   "where": "rolo",
+   "notes": "Volta aos treinos com variedade sem perder o estímulo. Bloco 1: sweet spot 6 min a 190 W. Bloco 2: escada 190/200/210 W (2 min cada). Bloco 3: 6x 30 s a 240 W / 30 s a 160 W. Bloco 4: 4 min a 195 W + 1 min a 215 W. Recuperações de 2 e 3 min em Z2 (145 W). Se as pernas pesarem na volta, use o -10 W sem culpa.",
+   "workout": {
+    "name": "FTP dinâmico: 4 blocos diferentes (47 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Hoje são quatro blocos diferentes, nenhum igual ao outro."
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 175
+      }
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "note": "Só para abrir as pernas."
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 360,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      },
+      "note": "Bloco um, sweet spot. Constante e firme."
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      },
+      "note": "Bloco dois, escada. A cada dois minutos sobe dez watts."
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 200
+      },
+      "note": "Segundo degrau."
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 210
+      },
+      "note": "Último degrau, no limiar."
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "note": "Bloco três, trinta por trinta. Seis tiros curtos."
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 160
+      }
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      }
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 160
+      }
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      }
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 160
+      }
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      }
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 160
+      }
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      }
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 160
+      }
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      }
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 160
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      },
+      "note": "Falta só o último bloco."
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "note": "Bloco quatro. Quatro minutos firmes e o último minuto mais forte."
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "note": "Fecha forte."
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      }
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      }
+     }
+    ]
+   }
   },
   {
    "date": "2026-11-26",
