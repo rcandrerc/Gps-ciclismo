@@ -21,6 +21,7 @@ import java.util.zip.GZIPOutputStream
  *  users/{uid}                         perfil (nome, peso, altura, FTP)
  *  users/{uid}/rides/{uuid}            resumo do treino
  *  users/{uid}/rides/{uuid}/points/{n} pontos segundo a segundo, compactados, em pedaços
+ *  users/{uid}/weights/{uuid}          pesagem (kg, FTP do dia e foto JPEG da balança)
  */
 object CloudCodec {
     /** Pontos por pedaço: 3 h de pedal a 1 Hz cabem em 3 pedaços, bem abaixo do limite de 1 MB do Firestore. */
@@ -145,6 +146,30 @@ object CloudCodec {
                 block = c[8].toIntOrNull(),
             )
         }.toList()
+
+    // ---- peso ----
+    /** Campos leves da pesagem (sem a foto), usados para listar sem baixar todas as fotos. */
+    val WEIGHT_LIGHT_FIELDS = listOf("uuid", "measuredAt", "weightKg", "ftp", "hasPhoto")
+
+    fun weightFields(w: WeightEntity, photo: ByteArray?): Map<String, JsonObject> = buildMap {
+        put("uuid", str(w.uuid))
+        put("measuredAt", int(w.measuredAt))
+        put("weightKg", dbl(w.weightKg))
+        put("ftp", int(w.ftp))
+        put("hasPhoto", obj("booleanValue", JsonPrimitive(photo != null)))
+        if (photo != null) put("photo", bytes(photo))
+    }
+
+    /** Pesagem vinda da nuvem (sem id nem foto local). Null se o documento estiver incompleto. */
+    fun weightFrom(f: JsonObject, syncedAt: Long): WeightEntity? {
+        val uuid = f.getStr("uuid") ?: return null
+        val at = f.getLong("measuredAt") ?: return null
+        val kg = f.getDouble("weightKg") ?: return null
+        return WeightEntity(uuid = uuid, measuredAt = at, weightKg = kg, ftp = f.getInt("ftp"), syncedAt = syncedAt)
+    }
+
+    fun JsonObject.getBool(name: String): Boolean? =
+        field(name)?.get("booleanValue")?.jsonPrimitive?.contentOrNull?.toBooleanStrictOrNull()
 
     // ---- perfil ----
     fun profileFields(p: Profile, updatedAt: Long): Map<String, JsonObject> = mapOf(

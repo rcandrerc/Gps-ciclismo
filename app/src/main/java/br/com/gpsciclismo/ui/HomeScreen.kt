@@ -21,6 +21,8 @@ import androidx.compose.material.icons.filled.PedalBike
 import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.MonitorWeight
+import br.com.gpsciclismo.core.WeightLog
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.SegmentedButton
@@ -109,11 +111,18 @@ private fun StartRideDialog(app: GpsCiclismoApp, plan: WorkoutPlan?, onDismiss: 
     val sensors by app.prefs.sensors.collectAsStateWithLifecycle()
     var indoor by remember { mutableStateOf(saved.indoor) }
     var erg by remember { mutableStateOf(saved.erg) }
+    var weighing by remember { mutableStateOf(false) }
+    // Pesagem: só lembra (no tablet sem câmera a foto vem do celular pela nuvem). Nunca impede de iniciar.
+    if (weighing) {
+        WeighInDialog(app) { weighing = false }
+        return
+    }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(plan?.name ?: "Pedal livre") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                TodayWeightNote(app) { weighing = true }
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                     SegmentedButton(selected = !indoor, onClick = { indoor = false }, shape = SegmentedButtonDefaults.itemShape(0, 2)) {
                         Text("Outdoor")
@@ -157,6 +166,8 @@ fun HomeScreen(app: GpsCiclismoApp, nav: NavController) {
     val profile by app.prefs.profile.collectAsStateWithLifecycle()
     val sensors by app.prefs.sensors.collectAsStateWithLifecycle()
     val start = rememberStartRide(app, nav)
+    val lastFlow = remember { app.db.weights().latestFlow() }
+    val lastWeight by lastFlow.collectAsStateWithLifecycle(null)
     val cs = MaterialTheme.colorScheme
 
     Column(
@@ -183,11 +194,23 @@ fun HomeScreen(app: GpsCiclismoApp, nav: NavController) {
             ) {
                 StatBlock("FTP", "${profile.ftp}", "W")
                 StatBlock("W/kg", if (profile.weightKg > 0) fmt1(profile.ftp / profile.weightKg) else "--", "")
+                StatBlock("Peso", if (profile.weightKg > 0) fmt1(profile.weightKg) else "--", "kg")
                 StatBlock("Sensores", "${sensors.size}", "")
             }
         }
 
-        Spacer(Modifier.height(4.dp))
+        // Lembrete do hábito de se pesar no dia do treino (registro com foto fica na tela Peso).
+        val weighedToday = WeightLog.sameDay(lastWeight?.measuredAt, System.currentTimeMillis())
+        Card(onClick = { nav.navigate("weights") }, colors = cardColors(), modifier = Modifier.fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Filled.MonitorWeight, null, tint = if (weighedToday) Green else Amber)
+                Text(
+                    if (weighedToday) "  Peso de hoje registrado: ${fmt1(lastWeight!!.weightKg)} kg"
+                    else "  Ainda não se pesou hoje. Toque para registrar",
+                    Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
         Button(
             onClick = { start(null) },
             modifier = Modifier.fillMaxWidth().height(68.dp),
@@ -216,6 +239,7 @@ fun HomeScreen(app: GpsCiclismoApp, nav: NavController) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             HomeTile("Sensores", Icons.Filled.Bluetooth, Modifier.weight(1f)) { nav.navigate("sensors") }
             HomeTile("Histórico", Icons.Filled.History, Modifier.weight(1f)) { nav.navigate("history") }
+            HomeTile("Peso", Icons.Filled.MonitorWeight, Modifier.weight(1f)) { nav.navigate("weights") }
             HomeTile("Perfil", Icons.Filled.Person, Modifier.weight(1f)) { nav.navigate("profile") }
         }
         // Conta na nuvem: atalho bem à vista enquanto não entrou.

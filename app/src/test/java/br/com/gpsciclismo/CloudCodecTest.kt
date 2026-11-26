@@ -4,9 +4,11 @@ import br.com.gpsciclismo.data.CloudCodec
 import br.com.gpsciclismo.data.Profile
 import br.com.gpsciclismo.data.RideEntity
 import br.com.gpsciclismo.data.RidePointEntity
+import br.com.gpsciclismo.data.WeightEntity
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -45,5 +47,19 @@ class CloudCodecTest {
         val p = Profile(name = "André", weightKg = 72.5, heightCm = 178, ftp = 210)
         assertEquals(p to 123L, CloudCodec.profileFrom(roundTrip(CloudCodec.profileFields(p, 123L))))
         assertNull(CloudCodec.profileFrom(JsonObject(emptyMap())))
+    }
+
+    @Test fun weightSurvivesRoundTrip() {
+        val w = WeightEntity(id = 3, uuid = "w-1", measuredAt = 1_795_700_000_000, weightKg = 81.7, ftp = 210, photoPath = "/x.jpg")
+        val photo = byteArrayOf(1, 2, 3, -1)
+        val f = roundTrip(CloudCodec.weightFields(w, photo))
+        assertEquals(w.copy(id = 0, photoPath = null, syncedAt = 5), CloudCodec.weightFrom(f, syncedAt = 5))
+        with(CloudCodec) {
+            assertEquals(true, f.getBool("hasPhoto"))
+            assertArrayEquals(photo, f.getBytes("photo"))
+        }
+        val noPhoto = roundTrip(CloudCodec.weightFields(w, null))
+        with(CloudCodec) { assertEquals(false, noPhoto.getBool("hasPhoto")) }
+        assertNull(CloudCodec.weightFrom(JsonObject(emptyMap()), 0))
     }
 }

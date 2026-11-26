@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
                         composable("calendar") { Centered(960.dp) { CalendarScreen(app, nav) } }
                         composable("live") { LiveRideScreen(app, nav) }
                         composable("history") { Centered { HistoryScreen(app, nav) } }
+                        composable("weights") { Centered { WeightHistoryScreen(app, nav) } }
                         composable(
                             "ride/{id}",
                             arguments = listOf(navArgument("id") { type = NavType.LongType }),

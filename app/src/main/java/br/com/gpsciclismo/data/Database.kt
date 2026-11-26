@@ -82,6 +82,51 @@ data class WorkoutEntity(
     val updatedAt: Long = System.currentTimeMillis(),
 )
 
+/** Pesagem (de preferência antes do treino), com foto opcional do visor da balança. */
+@Entity(indices = [Index(value = ["uuid"], unique = true)])
+data class WeightEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val uuid: String,
+    val measuredAt: Long,
+    val weightKg: Double,
+    /** FTP do perfil no dia, para mostrar o W/kg da época. */
+    val ftp: Int? = null,
+    /** Caminho da foto no aparelho (filesDir/weights/uuid.jpg), ou null sem foto. */
+    val photoPath: String? = null,
+    /** Quando foi enviado para a nuvem (null = ainda não subiu). */
+    val syncedAt: Long? = null,
+)
+
+@Dao
+interface WeightDao {
+    @Query("SELECT * FROM WeightEntity ORDER BY measuredAt DESC")
+    fun weights(): Flow<List<WeightEntity>>
+
+    @Query("SELECT * FROM WeightEntity ORDER BY measuredAt DESC LIMIT 1")
+    fun latestFlow(): Flow<WeightEntity?>
+
+    @Query("SELECT * FROM WeightEntity ORDER BY measuredAt DESC LIMIT 1")
+    suspend fun latest(): WeightEntity?
+
+    @Insert suspend fun insert(w: WeightEntity): Long
+
+    @Query("DELETE FROM WeightEntity WHERE id = :id")
+    suspend fun delete(id: Long)
+
+    // ---- nuvem ----
+    @Query("SELECT * FROM WeightEntity WHERE syncedAt IS NULL ORDER BY measuredAt")
+    suspend fun unsynced(): List<WeightEntity>
+
+    @Query("SELECT * FROM WeightEntity")
+    suspend fun all(): List<WeightEntity>
+
+    @Query("UPDATE WeightEntity SET syncedAt = :at WHERE id = :id")
+    suspend fun markSynced(id: Long, at: Long)
+
+    @Query("UPDATE WeightEntity SET syncedAt = NULL")
+    suspend fun clearSynced()
+}
+
 @Dao
 interface RideDao {
     @Insert suspend fun insertRide(ride: RideEntity): Long
@@ -133,18 +178,19 @@ interface WorkoutDao {
 }
 
 @Database(
-    entities = [RideEntity::class, RidePointEntity::class, WorkoutEntity::class],
-    version = 4,
+    entities = [RideEntity::class, RidePointEntity::class, WorkoutEntity::class, WeightEntity::class],
+    version = 5,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun rides(): RideDao
     abstract fun workouts(): WorkoutDao
+    abstract fun weights(): WeightDao
 
     companion object {
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "gps-ciclismo.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
 
         /** Versão 2: nota/aproveitamento do treino. Mantém o histórico. */
@@ -169,6 +215,18 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE RideEntity ADD COLUMN syncedAt INTEGER")
+            }
+        }
+
+        /** Versão 5: histórico de peso (pesagem antes do treino, com foto da balança). */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `WeightEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`uuid` TEXT NOT NULL, `measuredAt` INTEGER NOT NULL, `weightKg` REAL NOT NULL, " +
+                        "`ftp` INTEGER, `photoPath` TEXT, `syncedAt` INTEGER)"
+                )
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_WeightEntity_uuid` ON `WeightEntity` (`uuid`)")
             }
         }
     }
