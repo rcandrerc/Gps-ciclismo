@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.room.withTransaction
 import br.com.gpsciclismo.BuildConfig
+import br.com.gpsciclismo.data.CloudCodec.getBool
 import br.com.gpsciclismo.data.CloudCodec.getBytes
 import br.com.gpsciclismo.data.CloudCodec.getInt
 import br.com.gpsciclismo.data.CloudCodec.getStr
@@ -27,6 +28,7 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
+import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
@@ -51,7 +53,7 @@ data class CloudState(
  * Os treinos continuam salvos no aparelho (funciona sem internet no pedal);
  * quando há conta e internet, os treinos novos sobem e os que vieram de outro aparelho descem.
  */
-class CloudSync(context: Context, private val db: AppDatabase, private val prefs: Prefs) {
+class CloudSync(private val context: Context, private val db: AppDatabase, private val prefs: Prefs) {
     private val apiKey = BuildConfig.FIREBASE_API_KEY
     private val projectId = BuildConfig.FIREBASE_PROJECT_ID
     /** False quando o APK foi gerado sem a configuração do Firebase. */
@@ -113,7 +115,8 @@ class CloudSync(context: Context, private val db: AppDatabase, private val prefs
             // Outra conta neste aparelho: os treinos daqui sobem também para ela.
             if (sp.getString("lastUid", null) != uid) {
                 db.rides().clearSynced()
-                sp.edit().putLong("lastSync", 0L).remove("pendingDeletes").apply()
+                db.weights().clearSynced()
+                sp.edit().putLong("lastSync", 0L).remove("pendingDeletes").remove("pendingWeightDeletes").apply()
             }
             sp.edit()
                 .putString("uid", uid).putString("lastUid", uid)
@@ -137,7 +140,7 @@ class CloudSync(context: Context, private val db: AppDatabase, private val prefs
 
     fun signOut() {
         sp.edit().remove("uid").remove("email").remove("idToken").remove("idExp").remove("refreshToken")
-            .remove("pendingDeletes").apply()
+            .remove("pendingDeletes").remove("pendingWeightDeletes").apply()
         _state.value = CloudState()
     }
 
@@ -178,6 +181,14 @@ class CloudSync(context: Context, private val db: AppDatabase, private val prefs
         if (!signedIn) return
         val set = sp.getStringSet("pendingDeletes", emptySet())!!.toMutableSet().apply { add(uuid) }
         sp.edit().putStringSet("pendingDeletes", set).apply()
+        requestSync()
+    }
+
+    /** Pesagem apagada aqui: apaga também na nuvem. */
+    fun forgetWeight(uuid: String) {
+        if (!signedIn) return
+        val set = sp.getStringSet("pendingWeightDeletes", emptySet())!!.toMutableSet().apply { add(uuid) }
+        sp.edit().putStringSet("pendingWeightDeletes", set).apply()
         requestSync()
     }
 
@@ -275,12 +286,67 @@ class CloudSync(context: Context, private val db: AppDatabase, private val prefs
             }
         }
 
+        // 5) Pesagens: a foto tirada no celular aparece no tablet (e vice-versa).
+        syncWeights(userPath)
+
         val parts = buildList {
             if (sent > 0) add("$sent enviado${if (sent > 1) "s" else ""}")
             if (received > 0) add("$received baixado${if (received > 1) "s" else ""}")
             if (removed > 0) add("$removed apagado${if (removed > 1) "s" else ""}")
         }
         return if (parts.isEmpty()) "Tudo em dia." else "Sincronizado: ${parts.joinToString(", ")}."
+    }
+
+    private suspend fun syncWeights(userPath: String) {
+        val pending = sp.getStringSet("pendingWeightDeletes", emptySet())!!.toSet()
+        if (pending.isNotEmpty()) {
+            commit(pending.map { delete(fullName("$userPath/weights/$it")) })
+            val left = sp.getStringSet("pendingWeightDeletes", emptySet())!!.toMutableSet().apply { removeAll(pending) }
+            sp.edit().putStringSet("pendingWeightDeletes", left).apply()
+        }
+        for (w in db.weights().unsynced()) {
+            if (w.uuid in pending) continue
+            val photo = w.photoPath?.let { File(it) }?.takeIf { it.exists() && it.length() < MAX_PHOTO_BYTES }?.readBytes()
+            commit(listOf(update("$userPath/weights/${w.uuid}", CloudCodec.weightFields(w, photo))))
+            db.weights().markSynced(w.id, System.currentTimeMillis())
+        }
+        // Lista só os campos leves; a foto desce apenas para as pesagens novas.
+        val remote = listDocs("$userPath/weights", mask = CloudCodec.WEIGHT_LIGHT_FIELDS)
+        val local = db.weights().all()
+        val localUuids = local.map { it.uuid }.toHashSet()
+        localUuids += sp.getStringSet("pendingWeightDeletes", emptySet())!!
+        val remoteUuids = HashSet<String>()
+        var newest: WeightEntity? = null
+        for (doc in remote) {
+            val f = CloudCodec.fieldsOf(doc)
+            val w = CloudCodec.weightFrom(f, System.currentTimeMillis()) ?: continue
+            remoteUuids += w.uuid
+            if (w.uuid in localUuids) continue
+            var photoPath: String? = null
+            if (f.getBool("hasPhoto") == true) {
+                val full = getDoc("$userPath/weights/${w.uuid}")?.let { CloudCodec.fieldsOf(it) }
+                full?.getBytes("photo")?.let { bytes ->
+                    val file = WeightPhotos.fileFor(context, w.uuid)
+                    file.writeBytes(bytes)
+                    photoPath = file.path
+                }
+            }
+            val saved = w.copy(photoPath = photoPath)
+            db.weights().insert(saved)
+            if (newest == null || saved.measuredAt > newest.measuredAt) newest = saved
+        }
+        for (w in local) {
+            if (w.syncedAt != null && w.uuid !in remoteUuids) {
+                w.photoPath?.let { File(it).delete() }
+                db.weights().delete(w.id)
+            }
+        }
+        // Pesagem nova de outro aparelho: o peso do perfil acompanha.
+        val latest = db.weights().latest()
+        if (newest != null && latest?.uuid == newest.uuid && prefs.profile.value.weightKg != newest.weightKg) {
+            prefs.applyRemoteProfile(prefs.profile.value.copy(weightKg = newest.weightKg), System.currentTimeMillis())
+            again.set(true) // na próxima volta o perfil com o peso novo sobe para a nuvem
+        }
     }
 
     // --------------------------------------------------------------- Firestore
@@ -309,11 +375,12 @@ class CloudSync(context: Context, private val db: AppDatabase, private val prefs
         return json.parseToJsonElement(r.body).jsonObject
     }
 
-    private fun listDocs(path: String): List<JsonObject> {
+    private fun listDocs(path: String, mask: List<String>? = null): List<JsonObject> {
         val out = ArrayList<JsonObject>()
         var pageToken: String? = null
+        val maskQuery = mask?.joinToString("") { "&mask.fieldPaths=$it" } ?: ""
         do {
-            val url = "$docsBase/$path?pageSize=100" + (pageToken?.let { "&pageToken=" + URLEncoder.encode(it, "UTF-8") } ?: "")
+            val url = "$docsBase/$path?pageSize=100$maskQuery" + (pageToken?.let { "&pageToken=" + URLEncoder.encode(it, "UTF-8") } ?: "")
             val r = fsCall("GET", url, null)
             ensureOk(r)
             val o = json.parseToJsonElement(r.body).jsonObject
@@ -388,6 +455,8 @@ class CloudSync(context: Context, private val db: AppDatabase, private val prefs
     companion object {
         private const val AUTH = "https://identitytoolkit.googleapis.com/v1"
         private const val TOKEN = "https://securetoken.googleapis.com/v1/token"
+        /** Foto acima disso não sobe (o documento do Firestore tem limite de 1 MB). */
+        private const val MAX_PHOTO_BYTES = 700_000L
         const val NOT_CONFIGURED = "Este APK foi gerado sem a configuração do Firebase."
         const val OFFLINE = "Sem internet agora. Os treinos ficam no aparelho e sobem depois."
         const val SIGNED_OUT = "Sua sessão expirou. Entre de novo."
