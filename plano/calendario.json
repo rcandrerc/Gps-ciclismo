@@ -1,6 +1,6 @@
 {
  "name": "Recomeço FTP (a partir de 25/11)",
- "updated": "2026-11-25",
+ "updated": "2026-11-27",
  "days": [
   {
    "date": "2026-11-25",
@@ -215,6 +215,226 @@
        "type": "zone",
        "zone": 1
       }
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-11-27",
+   "title": "Tempo dinâmico leve: 4 blocos variados (47 min)",
+   "where": "rolo",
+   "notes": "Treino de recuperação ativa com estímulo, pensado para o dia seguinte a um treino pesado (FTP 200 W). Bloco 1: tempo 7 min a 165 W (90 rpm). Bloco 2: força 4 min a 160 W em 65 rpm + 2 min a 165 W em 95 rpm. Bloco 3: 5x 30 s a 195 W em 105 rpm / 30 s a 140 W. Bloco 4: pirâmide 170/180/170 W (2 min cada). Recuperações em Z2 (130 W). Nada acima de 195 W. Se as pernas reclamarem, use o -10 W; se estiver sobrando, não suba: hoje é para guardar.",
+   "workout": {
+    "name": "Tempo dinâmico leve: 4 blocos variados (47 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Treino de hoje é médio para leve, quatro blocos diferentes. Nada acima do limiar.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 160
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 420,
+      "target": {
+       "type": "watts",
+       "watts": 165
+      },
+      "note": "Bloco um, tempo contínuo. Ritmo confortável, respiração controlada.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 160
+      },
+      "note": "Bloco dois, força. Cadência baixa, tronco parado, empurra com a perna toda.",
+      "cadence": 65
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 165
+      },
+      "note": "Agora solta a cadência, mesma força.",
+      "cadence": 95
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "note": "Bloco três, giro rápido. Cinco tiros curtos, foco na cadência, não na força.",
+      "cadence": 105
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "cadence": 105
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "cadence": 105
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "cadence": 105
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "cadence": 105
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "note": "Falta só o último bloco.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 170
+      },
+      "note": "Bloco quatro, pirâmide de sweet spot baixo. Sobe, segura e desce.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 180
+      },
+      "note": "Topo da pirâmide.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 170
+      },
+      "note": "Descendo. Fecha bem.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 125
+      },
+      "cadence": 85
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
      }
     ]
    }
