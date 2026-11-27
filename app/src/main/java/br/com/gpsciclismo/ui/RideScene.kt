@@ -40,7 +40,6 @@ import br.com.gpsciclismo.recording.RecStatus
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.acos
-import kotlin.math.atan
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.floor
@@ -82,8 +81,10 @@ class SceneSim {
     var dist = 0f             // distância "de textura" (faixas, postes, montanhas), em px de referência
     var lead = 0f             // vantagem do fantasma, em fração da largura
     var ghostTarget: Int? = null
-    var camE = Double.NaN
     var effort = 0f
+    /** Postura (0 = ereto, 1 = ataque), suavizada para trocar de posição sem pulo. */
+    var posture = 0f
+    var ghostPosture = 0f
     val winds = Array(36) { floatArrayOf(rnd(it), rnd(it + 50), rnd(it + 90)) }
 
     fun step(dt: Float, live: LiveRide, track: SceneTrack) {
@@ -104,6 +105,8 @@ class SceneSim {
         cadence += (cadIn - cadence) * min(1f, dt * 2f)
         crank -= cadence / 60f * 2f * PI.toFloat() * dt
         effort = min(1f, power / 250f)
+        // muda de postura devagar (~1,5 s), para não ficar mexendo a cada pico de potência
+        posture += (track.postureAt(power) - posture) * min(1f, dt * 0.7f)
 
         val speed = when {
             !running -> 0f
@@ -122,11 +125,10 @@ class SceneSim {
             lead += (power - gt) * 0.0016f * dt
             lead *= 1f - 0.12f * dt
             lead = lead.coerceIn(-0.16f, 0.16f)
-            ghostCrank -= (90f - track.gradeAt(t).toFloat() * 0.9f) / 60f * 2f * PI.toFloat() * dt
+            ghostCrank -= 90f / 60f * 2f * PI.toFloat() * dt
         } else if (gt == null) lead = 0f
-
-        val e = track.elevation(t)
-        camE = if (camE.isNaN()) e else camE + (e - camE) * min(1.0, dt * 6.0)
+        val gp = if (gt != null) track.postureAt(gt.toFloat()) else 0f
+        ghostPosture += (gp - ghostPosture) * min(1f, dt * 0.7f)
 
         if (running) {
             val drift = dt * (0.4f + power / 300f)
@@ -181,52 +183,43 @@ private class ScenePainter(private val measurer: TextMeasurer) {
     private val signText = HashMap<String, TextLayoutResult>()
 
     private var W = 0f; private var H = 0f; private var s = 1f
-    private var pps = 1f; private var k = 1f; private var rx = 0f; private var baseY = 0f
+    private var pps = 1f; private var rx = 0f; private var baseY = 0f
 
     fun draw(ds: DrawScope, sim: SceneSim, track: SceneTrack) = with(ds) {
         W = size.width; H = size.height
         if (W <= 0f || H <= 0f) return@with
         s = W / 1100f
         pps = W * 0.62f / LOOKAHEAD_SEC
-        k = pps * 2.2f / 100f
         rx = W * 0.40f
         baseY = H * 0.70f
-        val camE = if (sim.camE.isNaN()) track.elevation(sim.t) else sim.camE
 
         drawSky(sim)
-        layer(sim, camE, 0.06f, H * 0.50f, 0.07f, 1.3f, Color(0xBF9680A5), 0.15f)
-        layer(sim, camE, 0.16f, H * 0.58f, 0.06f, 4.2f, Color(0xFF5D5986), 0.3f)
-        layer(sim, camE, 0.38f, H * 0.66f, 0.05f, 7.9f, Color(0xFF36405F), 0.55f)
-        trees(sim, camE)
-        drawGround(sim, track, camE)
+        layer(sim, 0.06f, H * 0.50f, 0.07f, 1.3f, Color(0xBF9680A5))
+        layer(sim, 0.16f, H * 0.58f, 0.06f, 4.2f, Color(0xFF5D5986))
+        layer(sim, 0.38f, H * 0.66f, 0.05f, 7.9f, Color(0xFF36405F))
+        trees(sim)
+        drawGround(sim, track)
         drawWind(sim)
 
         // fantasma (camada transparente única, para não manchar onde as partes se cruzam)
         val gt = sim.ghostTarget
         if (gt != null) {
             val gx = rx - sim.lead * W
-            val gy = roadY(track, sim.t, gx, camE)
+            val gy = baseY
             drawIntoCanvas { it.saveLayer(Rect(gx - 120 * s, gy - 230 * s, gx + 140 * s, gy + 20 * s), ghostPaint) }
-            drawRider(gx, gy + s, slope(track, sim.t + (gx - rx) / pps), sim.ghostCrank, wheelRot(sim), true, 0.6f)
+            drawRider(gx, gy + s, sim.ghostCrank, wheelRot(sim), true, 0.6f, sim.ghostPosture)
             drawIntoCanvas { it.restore() }
             val lbl = label("ALVO", 11f, FontWeight.SemiBold, Color.White.copy(alpha = 0.75f))
-            drawText(lbl, topLeft = Offset(gx + 10 * s - lbl.size.width / 2f, gy - 172 * s))
+            drawText(lbl, topLeft = Offset(gx + 10 * s - lbl.size.width / 2f, gy - (172 - 20 * sim.ghostPosture) * s))
         }
         // sombra e ciclista
-        val ry = roadY(track, sim.t, rx, camE)
-        val ang = slope(track, sim.t)
-        withTransform({ rotate(-Math.toDegrees(ang.toDouble()).toFloat(), Offset(rx, ry + 3 * s)) }) {
-            drawOval(Color.Black.copy(alpha = 0.28f), Offset(rx - 62 * s, ry - 2 * s), Size(124 * s, 10 * s))
-        }
-        drawRider(rx, ry + s, ang, sim.crank, wheelRot(sim), false, sim.effort)
+        val ry = baseY
+        drawOval(Color.Black.copy(alpha = 0.28f), Offset(rx - 62 * s, ry - 2 * s), Size(124 * s, 10 * s))
+        drawRider(rx, ry + s, sim.crank, wheelRot(sim), false, sim.effort, sim.posture)
     }
 
     private fun wheelRot(sim: SceneSim) = -sim.dist / 1.25f / 30f
 
-    private fun roadY(track: SceneTrack, t: Double, x: Float, camE: Double): Float =
-        baseY - ((track.elevation(t + (x - rx) / pps) - camE) * k).toFloat()
-
-    private fun slope(track: SceneTrack, t: Double): Float = atan(track.gradeAt(t) * 2.2 / 100).toFloat()
 
     // ---------- fundo ----------
 
@@ -256,28 +249,26 @@ private class ScenePainter(private val measurer: TextMeasurer) {
     private fun ridge(x: Float, seed: Float, amp: Float): Float =
         amp * (0.55f * sin(x * 0.0021f + seed) + 0.3f * sin(x * 0.0057f + seed * 2.3f) + 0.15f * sin(x * 0.013f + seed * 4.1f))
 
-    private var nearOff = 0f; private var nearDy = 0f
+    private var nearOff = 0f
 
-    private fun DrawScope.layer(sim: SceneSim, camE: Double, f: Float, yBase: Float, amp: Float, seed: Float, color: Color, vpar: Float): Float {
+    private fun DrawScope.layer(sim: SceneSim, f: Float, yBase: Float, amp: Float, seed: Float, color: Color) {
         val off = sim.dist * s * f
-        val dy = (camE * k * vpar).toFloat()
         p1.reset(); p1.moveTo(0f, H)
         var x = 0f
-        while (x <= W + 10f) { p1.lineTo(x, yBase + dy + ridge((x + off) / s, seed, amp * H)); x += 10f }
+        while (x <= W + 10f) { p1.lineTo(x, yBase + ridge((x + off) / s, seed, amp * H)); x += 10f }
         p1.lineTo(W, H); p1.close()
         drawPath(p1, color)
-        if (f == 0.38f) { nearOff = off; nearDy = dy }
-        return dy
+        if (f == 0.38f) nearOff = off
     }
 
-    private fun DrawScope.trees(sim: SceneSim, camE: Double) {
+    private fun DrawScope.trees(sim: SceneSim) {
         val sp = 46f * s
         val i0 = floor(nearOff / sp).toInt() - 1
         val i1 = ((nearOff + W) / sp).toInt() + 1
         for (i in i0..i1) {
             if (rnd(i) < 0.35f) continue
             val x = i * sp - nearOff + rnd(i + 5) * sp * 0.6f
-            val y = H * 0.66f + nearDy + ridge((x + nearOff) / s, 7.9f, 0.05f * H) + 2f
+            val y = H * 0.66f + ridge((x + nearOff) / s, 7.9f, 0.05f * H) + 2f
             val h = 30f * s * (0.6f + rnd(i + 9) * 0.8f); val w = h * 0.36f
             tmp.reset(); tmp.moveTo(x, y - h); tmp.lineTo(x + w, y); tmp.lineTo(x - w, y); tmp.close()
             drawPath(tmp, Color(0xFF2B3450))
@@ -286,14 +277,14 @@ private class ScenePainter(private val measurer: TextMeasurer) {
 
     // ---------- estrada ----------
 
-    private fun DrawScope.drawGround(sim: SceneSim, track: SceneTrack, camE: Double) {
+    private fun DrawScope.drawGround(sim: SceneSim, track: SceneTrack) {
         val step = 8f
         // campo abaixo da estrada
         p1.reset(); p1.moveTo(-10f, H)
         p2.reset()
         var x = -10f; var first = true
         while (x <= W + 10f) {
-            val y = roadY(track, sim.t, x, camE)
+            val y = baseY
             p1.lineTo(x, y - 6 * s)
             if (first) { p2.moveTo(x, y + 6 * s); first = false } else p2.lineTo(x, y + 6 * s)
             x += step
@@ -303,7 +294,7 @@ private class ScenePainter(private val measurer: TextMeasurer) {
         // borda iluminada pelo sol
         tmp.reset(); x = -10f; first = true
         while (x <= W + 10f) {
-            val y = roadY(track, sim.t, x, camE) - 7 * s
+            val y = baseY - 7 * s
             if (first) { tmp.moveTo(x, y); first = false } else tmp.lineTo(x, y)
             x += step
         }
@@ -320,7 +311,7 @@ private class ScenePainter(private val measurer: TextMeasurer) {
         val off = (sim.dist * s) % sp
         var px = -off
         while (px <= W + sp) {
-            val y = roadY(track, sim.t, px, camE) - 6 * s
+            val y = baseY - 6 * s
             drawRect(Color(0xFFD9D2C1), Offset(px - 1.5f * s, y - 16 * s), Size(3 * s, 16 * s))
             drawRect(Color(0xFFFF7A3D), Offset(px - 1.5f * s, y - 15 * s), Size(3 * s, 3 * s))
             px += sp
@@ -335,11 +326,11 @@ private class ScenePainter(private val measurer: TextMeasurer) {
                 val w = track.watts[i]
                 val top = if (w != null) (if (z > 0) "Z$z · $w W" else "$w W") else "LIVRE"
                 val sub = if (z > 0) CogganZones.zone(z).name.uppercase() else "PEDAL LIVRE"
-                sign(sx, roadY(track, sim.t, sx, camE) - 7 * s, top, sub, zoneColor(z))
+                sign(sx, baseY - 7 * s, top, sub, zoneColor(z))
             }
             val tf = track.totalSec - 2.0
             val fx = rx + ((tf - sim.t) * pps).toFloat()
-            if (fx > -120 * s && fx < W + 120 * s) sign(fx, roadY(track, sim.t, fx, camE) - 7 * s, "CHEGADA", "FIM DO TREINO", Color.White)
+            if (fx > -120 * s && fx < W + 120 * s) sign(fx, baseY - 7 * s, "CHEGADA", "FIM DO TREINO", Color.White)
         }
     }
 
@@ -423,8 +414,12 @@ private class ScenePainter(private val measurer: TextMeasurer) {
 
     private fun deg(r: Float) = Math.toDegrees(r.toDouble()).toFloat()
 
-    /** Ciclista de perfil, virado para a direita. Coordenadas locais com y para cima. */
-    private fun DrawScope.drawRider(x: Float, y: Float, ang: Float, cr: Float, wr: Float, ghost: Boolean, effort: Float) {
+    /**
+     * Ciclista de perfil, virado para a direita. Coordenadas locais com y para cima.
+     * [posture]: 0 = tronco ereto, mãos em cima do guidão (zonas leves);
+     * 1 = posição de ataque, tronco baixo, cotovelos dobrados e mãos na curva de baixo (zonas altas).
+     */
+    private fun DrawScope.drawRider(x: Float, y: Float, cr: Float, wr: Float, ghost: Boolean, effort: Float, posture: Float) {
         val K = if (ghost) ghostPal else solid
         val O = 1.7f
         fun L(a: Offset, b: Offset, wa: Float, wb: Float, c: Color) {
@@ -434,13 +429,18 @@ private class ScenePainter(private val measurer: TextMeasurer) {
         val sc = s * 1.25f
         withTransform({
             translate(x, y)
-            rotate(-deg(ang), Offset.Zero)
             scale(sc, -sc, Offset.Zero)
         }) {
             val R = 30f
             val rear = Offset(-34f, R); val front = Offset(36f, R); val bb = Offset(-6f, R - 4)
             val bob = sin(cr * 2) * 0.7f * effort
-            val hip = Offset(-17f, 77 + bob); val sh = Offset(14f, 98 + bob * 0.6f); val hc = Offset(25f, 107 + bob * 0.5f)
+            val q = posture.coerceIn(0f, 1f)
+            // tronco gira no quadril: 44° (ereto) até 16° (ataque); no ataque o quadril vai para a ponta do selim
+            val th = lerpF(TORSO_UP, TORSO_ATTACK, q)
+            val hip = Offset(-17f + lerpF(-1.5f, 1.5f, q), 77 + bob)
+            val sh = Offset(hip.x + TORSO_LEN * cos(th), hip.y + TORSO_LEN * sin(th) - bob * 0.4f)
+            val nk = th + lerpF(0.10f, 0.42f, q)       // no ataque a cabeça levanta para olhar a estrada
+            val hc = Offset(sh.x + 14.2f * cos(nk), sh.y + 14.2f * sin(nk) - bob * 0.1f)
             fun pedal(a: Float) = Offset(bb.x + 10 * cos(a), bb.y + 10 * sin(a))
 
             fun leg(a: Float, far: Boolean) {
@@ -536,7 +536,11 @@ private class ScenePainter(private val measurer: TextMeasurer) {
             K.o?.let { drawPath(tmp, it, style = Stroke(4.6f, cap = StrokeCap.Round)) }
             drawPath(tmp, K.saddle, style = Stroke(3f, cap = StrokeCap.Round))
 
-            // tronco (camisa)
+            // tronco (camisa): desenhado na pose de referência e girado no quadril
+            withTransform({
+                translate(hip.x + 17f, 0f)
+                rotate(deg(th - TORSO_REF), Offset(-17f, 77 + bob))
+            }) {
             p1.reset()
             p1.moveTo(-23f, 78 + bob); p1.quadraticBezierTo(-8f, 102 + bob, 13f, 104 + bob * 0.6f)
             p1.quadraticBezierTo(21f, 103 + bob * 0.6f, 21f, 96 + bob * 0.6f)
@@ -551,7 +555,8 @@ private class ScenePainter(private val measurer: TextMeasurer) {
                 tmp.reset(); tmp.moveTo(-21f, 83.5f + bob); tmp.quadraticBezierTo(-5f, 94.5f + bob, 17f, 97.5f + bob * 0.6f)
                 drawPath(tmp, Coral, style = Stroke(1.4f))
             }
-            L(hip, Offset(-11f, 74 + bob), 13f, 12f, K.bib)
+            }
+            L(hip, Offset(hip.x + 6f, 74 + bob), 13f, 12f, K.bib)
 
             leg(cr, false)
 
@@ -587,8 +592,9 @@ private class ScenePainter(private val measurer: TextMeasurer) {
             }
 
             // braço: manga, antebraço, luva
-            val hand = Offset(37f, 67f)
-            val el = ik(sh, hand, 19f, 20f, -1f)
+            // mãos: em cima (ereto) → manete → curva de baixo (ataque)
+            val hand = if (q < 0.5f) lerp(HAND_TOPS, HAND_HOODS, q * 2) else lerp(HAND_HOODS, HAND_DROPS, q * 2 - 1)
+            val el = ik(sh, hand, 21f, 21f, -1f)
             val slv = lerp(sh, el, 0.55f)
             L(slv, el, 5.6f, 5f, K.skin)
             L(el, hand, 5f, 4.2f, K.skin)
@@ -599,8 +605,18 @@ private class ScenePainter(private val measurer: TextMeasurer) {
         }
     }
 
+    private fun lerpF(a: Float, b: Float, t: Float) = a + (b - a) * t
+
     companion object {
-        /** Segundos do treino que cabem à frente do ciclista na tela (dá para ver a próxima subida chegando). */
+        private const val TORSO_LEN = 37.4f
+        private val TORSO_REF = atan2(21f, 31f)               // ângulo do tronco no desenho de referência
+        private val TORSO_UP = Math.toRadians(44.0).toFloat()
+        private val TORSO_ATTACK = Math.toRadians(16.0).toFloat()
+        private val HAND_TOPS = Offset(32f, 68.6f)
+        private val HAND_HOODS = Offset(38.6f, 66f)
+        private val HAND_DROPS = Offset(36.5f, 58.8f)
+
+        /** Segundos do treino que cabem à frente do ciclista na tela (dá para ver a próxima placa chegando). */
         const val LOOKAHEAD_SEC = 75f
     }
 }
