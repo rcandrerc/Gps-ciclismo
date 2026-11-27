@@ -23,6 +23,12 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.MonitorWeight
 import br.com.gpsciclismo.core.WeightLog
+import br.com.gpsciclismo.core.PlanCompliance
+import androidx.compose.material.icons.filled.EventAvailable
+import androidx.compose.runtime.LaunchedEffect
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.SegmentedButton
@@ -211,6 +217,7 @@ fun HomeScreen(app: GpsCiclismoApp, nav: NavController) {
                 )
             }
         }
+        ComplianceCard(app) { nav.navigate("calendar") }
         Button(
             onClick = { start(null) },
             modifier = Modifier.fillMaxWidth().height(68.dp),
@@ -278,6 +285,47 @@ private fun HomeTile(label: String, icon: ImageVector, modifier: Modifier, onCli
             Icon(icon, null, Modifier.size(28.dp), tint = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.height(8.dp))
             Text(label, style = MaterialTheme.typography.labelLarge)
+        }
+    }
+}
+
+/** Taxa de conclusão do plano nos últimos 30 dias: feito conta inteiro, em parte conta metade. */
+@Composable
+private fun ComplianceCard(app: GpsCiclismoApp, onClick: () -> Unit) {
+    val calendar by app.calendar.calendar.collectAsStateWithLifecycle()
+    val ridesFlow = remember { app.db.rides().rides() }
+    val rides by ridesFlow.collectAsStateWithLifecycle(emptyList())
+    LaunchedEffect(Unit) { app.calendar.refresh() }
+    val summary = remember(calendar, rides) {
+        val byDay = rides.groupBy { Instant.ofEpochMilli(it.startedAt).atZone(ZoneId.systemDefault()).toLocalDate() }
+            .mapValues { (_, l) -> l.map { it.toDoneRide() } }
+        PlanCompliance.summary(calendar, byDay, LocalDate.now())
+    }
+    val rate = summary.ratePct ?: return
+    val color = when {
+        rate >= 85 -> Green
+        rate >= 65 -> MaterialTheme.colorScheme.primary
+        rate >= 40 -> Amber
+        else -> Red
+    }
+    Card(onClick = onClick, colors = cardColors(), modifier = Modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Filled.EventAvailable, null, tint = color)
+            Column(Modifier.weight(1f).padding(start = 12.dp)) {
+                Text("Treinos concluídos (30 dias)", style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(summary.verdict(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    buildString {
+                        append("${summary.done} feito" + if (summary.done == 1) "" else "s")
+                        if (summary.partial > 0) append(" · ${summary.partial} em parte")
+                        append(" · ${summary.missed} furo" + if (summary.missed == 1) "" else "s")
+                        append(" de ${summary.planned}")
+                    },
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text("$rate%", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = color, style = Tabular)
         }
     }
 }
