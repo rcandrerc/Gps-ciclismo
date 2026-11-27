@@ -9,9 +9,10 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,15 +41,32 @@ fun UpdatePrompt(enabled: Boolean) {
 
     var canInstall by remember { mutableStateOf(updater.canInstall()) }
 
-    LaunchedEffect(Unit) { remote = updater.check() }
-    // Ao voltar da tela de permissão, reavalia.
-    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { canInstall = updater.canInstall() }
+    var dismissedCode by remember { mutableIntStateOf(0) }
+    var lastCheck by remember { mutableLongStateOf(0L) }
+
+    // Confere ao abrir e toda vez que o app volta para a frente (o tablet pode ficar dias com o
+    // app aberto em segundo plano). No máximo a cada 10 min, e nunca durante o download.
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        canInstall = updater.canInstall()
+        val now = System.currentTimeMillis()
+        if (!downloading && now - lastCheck > 10 * 60_000L) {
+            lastCheck = now
+            scope.launch {
+                val found = updater.check()
+                if (found != null) {
+                    // "Depois" vale só para aquela versão; se sair outra mais nova, pergunta de novo.
+                    if (found.versionCode > dismissedCode) dismissed = false
+                    remote = found
+                }
+            }
+        }
+    }
 
     val r = remote
     if (!enabled || r == null || dismissed) return
 
     AlertDialog(
-        onDismissRequest = { if (!downloading) dismissed = true },
+        onDismissRequest = { if (!downloading) { dismissed = true; dismissedCode = r.versionCode } },
         title = { Text("Nova versão disponível") },
         text = {
             Column {
@@ -82,7 +100,7 @@ fun UpdatePrompt(enabled: Boolean) {
             }) { Text(if (canInstall) "Atualizar" else "Liberar instalação") }
         },
         dismissButton = {
-            TextButton(enabled = !downloading, onClick = { dismissed = true }) { Text("Depois") }
+            TextButton(enabled = !downloading, onClick = { dismissed = true; dismissedCode = r.versionCode }) { Text("Depois") }
         },
     )
 }
