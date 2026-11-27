@@ -1,5 +1,5 @@
 {
- "name": "Recomeço FTP (a partir de 25/11)",
+ "name": "Bloco até o teste de FTP (28/11 a 23/12)",
  "updated": "2026-11-27",
  "days": [
   {
@@ -435,6 +435,2777 @@
        "zone": 1
       },
       "cadence": 85
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-11-28",
+   "title": "Sweet spot dinâmico: contínuo, escada e 30/30 (44 min)",
+   "where": "rolo",
+   "notes": "Semana 1 de 3 de carga (FTP 200 W). Começo devagar. Bloco 1: sweet spot 6 min a 178 W. Bloco 2: escada 175/185/195 W (2 min cada). Bloco 3: 5x 30 s a 225 W em 100 rpm / 30 s leve. Bloco 4: 4 min a 182 W em 70 rpm (força). Recuperações em Z2 (130 W).",
+   "workout": {
+    "name": "Sweet spot dinâmico: contínuo, escada e 30/30 (44 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Semana um do bloco até o teste. Hoje é sweet spot, começando devagar.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 165
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "note": "Só para abrir as pernas.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 360,
+      "target": {
+       "type": "watts",
+       "watts": 178
+      },
+      "note": "Bloco um, sweet spot contínuo. Firme e constante.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 175
+      },
+      "note": "Bloco dois, escada. Sobe um pouco a cada degrau.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 185
+      },
+      "note": "Segundo degrau.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "note": "Último degrau, perto do limiar.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 225
+      },
+      "note": "Bloco três, trinta por trinta. Giro rápido.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 225
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 225
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 225
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 225
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "note": "Falta só o último bloco.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 182
+      },
+      "note": "Bloco quatro, força. Cadência baixa, tronco parado.",
+      "cadence": 70
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 125
+      },
+      "cadence": 85
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-11-29",
+   "title": "Descanso",
+   "notes": "Dia livre. Dormir bem também é treino."
+  },
+  {
+   "date": "2026-11-30",
+   "title": "Descanso",
+   "notes": "Dia livre. Dormir bem também é treino."
+  },
+  {
+   "date": "2026-12-01",
+   "title": "Limiar dinâmico: over-under, pirâmide e final forte (44 min)",
+   "where": "rolo",
+   "notes": "Bloco 1: over-under 2x (2 min a 185 W + 1 min a 205 W). Bloco 2: pirâmide 180/195/205/195 W (90 s cada). Bloco 3: 5x 30 s a 230 W em 100 rpm. Bloco 4: 3 min a 190 W + 30 s a 230 W. Limiar em 85-95 rpm.",
+   "workout": {
+    "name": "Limiar dinâmico: over-under, pirâmide e final forte (44 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Hoje é limiar dinâmico. Quatro formatos diferentes.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 165
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "note": "Só para abrir as pernas.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 185
+      },
+      "note": "Bloco um, over-under. Dois minutos abaixo do limiar, um acima.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 205
+      },
+      "note": "Sobe.",
+      "cadence": 95
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 185
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 205
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 180
+      },
+      "note": "Bloco dois, pirâmide.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 205
+      },
+      "note": "Topo.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "note": "Descendo.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "note": "Bloco três, trinta por trinta.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "note": "Falta só o último bloco.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      },
+      "note": "Bloco quatro, final forte.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "note": "Fecha com tudo controlado.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 125
+      },
+      "cadence": 85
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-12-02",
+   "title": "Descanso",
+   "notes": "Dia livre. Dormir bem também é treino."
+  },
+  {
+   "date": "2026-12-03",
+   "title": "Tempo e força: Z3 em cadências diferentes (44 min)",
+   "where": "rolo",
+   "notes": "Treino médio para fechar a semana. Bloco 1: tempo 8 min a 165 W. Bloco 2: força 5 min a 165 W em 65 rpm. Bloco 3: cadência em escada 85/95/105 rpm a 170 W. Bloco 4: 4 min a 180 W. Nada acima de 190 W.",
+   "workout": {
+    "name": "Tempo e força: Z3 em cadências diferentes (44 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Hoje é tempo e força, um treino médio.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 165
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "note": "Só para abrir as pernas.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 480,
+      "target": {
+       "type": "watts",
+       "watts": 165
+      },
+      "note": "Bloco um, tempo contínuo. Respiração controlada.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 165
+      },
+      "note": "Bloco dois, força. Cadência baixa, empurra com a perna toda.",
+      "cadence": 65
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 170
+      },
+      "note": "Bloco três, mesma potência e a cadência vai subindo.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 170
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 170
+      },
+      "note": "Giro rápido, quadril parado.",
+      "cadence": 105
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 180
+      },
+      "note": "Bloco quatro, sweet spot baixo. Fecha bem.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 125
+      },
+      "cadence": 85
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-12-04",
+   "title": "Descanso",
+   "notes": "Dia livre. Dormir bem também é treino."
+  },
+  {
+   "date": "2026-12-05",
+   "title": "Limiar dinâmico: sweet spot, over-under e 30/30 (50 min)",
+   "where": "rolo",
+   "notes": "Semana 2 de 3: mais tempo perto do limiar. Bloco 1: sweet spot 8 min a 183 W. Bloco 2: over-under 3x (2 min a 190 W + 1 min a 210 W). Bloco 3: 6x 30 s a 235 W em 100 rpm. Bloco 4: 3 min a 195 W + 1 min a 210 W.",
+   "workout": {
+    "name": "Limiar dinâmico: sweet spot, over-under e 30/30 (50 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Semana dois. Hoje é limiar dinâmico, um pouco mais longo.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 165
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "note": "Só para abrir as pernas.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 480,
+      "target": {
+       "type": "watts",
+       "watts": 183
+      },
+      "note": "Bloco um, sweet spot contínuo.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      },
+      "note": "Bloco dois, over-under. Três vezes, abaixo e acima do limiar.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 210
+      },
+      "note": "Sobe.",
+      "cadence": 95
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 210
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 210
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      },
+      "note": "Bloco três, trinta por trinta. Seis tiros.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "note": "Falta só o último bloco.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "note": "Bloco quatro, final forte.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 210
+      },
+      "note": "Último minuto no limiar.",
+      "cadence": 95
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 125
+      },
+      "cadence": 85
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-12-06",
+   "title": "Descanso",
+   "notes": "Dia livre. Dormir bem também é treino."
+  },
+  {
+   "date": "2026-12-07",
+   "title": "Z2 com giro: cadência alta e força leve (41 min)",
+   "where": "rolo",
+   "notes": "Treino leve no meio da semana. Z2 a 140 W com trechos de giro (105 rpm) e um trecho de força (65 rpm), tudo leve. Não passa de 165 W.",
+   "workout": {
+    "name": "Z2 com giro: cadência alta e força leve (41 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Treino leve hoje. Z2 com variação de cadência.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "note": "Giro rápido, mesma força.",
+      "cadence": 105
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "note": "Giro de novo, dois minutos.",
+      "cadence": 105
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 155
+      },
+      "note": "Força leve. Cadência baixa, sem forçar.",
+      "cadence": 65
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      },
+      "note": "Último giro.",
+      "cadence": 105
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 155
+      },
+      "note": "Um pouco de tempo para fechar.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 125
+      },
+      "cadence": 85
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-12-08",
+   "title": "VO2 curto e limiar: 40/20, escada e final forte (45 min)",
+   "where": "rolo",
+   "notes": "Bloco 1: 6x 40 s a 235 W / 20 s leve, em 100 rpm. Bloco 2: escada 190/200/205/210 W (2 min cada). Bloco 3: força 4 min a 180 W em 65 rpm. Bloco 4: 4 min a 195 W com 30 s finais a 240 W.",
+   "workout": {
+    "name": "VO2 curto e limiar: 40/20, escada e final forte (45 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Hoje tem VO2 curto e limiar. Formatos diferentes.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 165
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "note": "Só para abrir as pernas.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 40,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      },
+      "note": "Bloco um, quarenta por vinte. Forte e curto.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 20,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 40,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 20,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 40,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 20,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 40,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 20,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 40,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 20,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 40,
+      "target": {
+       "type": "watts",
+       "watts": 235
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 20,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      },
+      "note": "Bloco dois, escada até o limiar.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 200
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 205
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 210
+      },
+      "note": "Último degrau, no limiar.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 180
+      },
+      "note": "Bloco três, força em Z3. Cadência baixa.",
+      "cadence": 65
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "note": "Falta só o último bloco.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 210,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "note": "Bloco quatro, final forte.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "note": "Sprint controlado, fecha!",
+      "cadence": 100
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 125
+      },
+      "cadence": 85
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-12-09",
+   "title": "Descanso",
+   "notes": "Dia livre. Dormir bem também é treino."
+  },
+  {
+   "date": "2026-12-10",
+   "title": "Sweet spot com força: Z3 em 65 rpm (46 min)",
+   "where": "rolo",
+   "notes": "Bloco 1: força 6 min a 170 W em 65 rpm. Bloco 2: sweet spot 8 min a 185 W. Bloco 3: 5x 30 s a 225 W em 105 rpm. Bloco 4: pirâmide de cadência 85/95/105/95 rpm a 178 W.",
+   "workout": {
+    "name": "Sweet spot com força: Z3 em 65 rpm (46 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Hoje é sweet spot com força.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 165
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "note": "Só para abrir as pernas.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 360,
+      "target": {
+       "type": "watts",
+       "watts": 170
+      },
+      "note": "Bloco um, força. Tronco parado, empurra com a perna toda.",
+      "cadence": 65
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 480,
+      "target": {
+       "type": "watts",
+       "watts": 185
+      },
+      "note": "Bloco dois, sweet spot contínuo.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 225
+      },
+      "note": "Bloco três, giro rápido. Foco na cadência.",
+      "cadence": 105
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 225
+      },
+      "cadence": 105
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 225
+      },
+      "cadence": 105
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 225
+      },
+      "cadence": 105
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 225
+      },
+      "cadence": 105
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "note": "Falta só o último bloco.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 178
+      },
+      "note": "Bloco quatro, mesma potência mudando a cadência.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 178
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 178
+      },
+      "cadence": 105
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 178
+      },
+      "note": "Fecha bem.",
+      "cadence": 95
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 125
+      },
+      "cadence": 85
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-12-11",
+   "title": "Descanso",
+   "notes": "Dia livre. Dormir bem também é treino."
+  },
+  {
+   "date": "2026-12-12",
+   "title": "Limiar dinâmico longo: 4 formatos e final forte (52 min)",
+   "where": "rolo",
+   "notes": "Semana 3 de 3: a mais forte. Bloco 1: sweet spot 8 min a 186 W. Bloco 2: over-under 3x (2 min a 195 W + 1 min a 215 W). Bloco 3: 7x 30 s a 240 W em 100 rpm. Bloco 4: 4 min a 200 W + 1 min a 215 W.",
+   "workout": {
+    "name": "Limiar dinâmico longo: 4 formatos e final forte (52 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Semana três, a mais forte do bloco. Limiar dinâmico longo.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 165
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "note": "Só para abrir as pernas.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 480,
+      "target": {
+       "type": "watts",
+       "watts": 186
+      },
+      "note": "Bloco um, sweet spot contínuo. Oito minutos firmes.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "note": "Bloco dois, over-under.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "note": "Sobe.",
+      "cadence": 95
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "note": "Bloco três, trinta por trinta. Sete tiros.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "note": "Falta só o último bloco.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 200
+      },
+      "note": "Bloco quatro, no limiar.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "note": "Último minuto acima. Fecha forte.",
+      "cadence": 95
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 125
+      },
+      "cadence": 85
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-12-13",
+   "title": "Descanso",
+   "notes": "Dia livre. Dormir bem também é treino."
+  },
+  {
+   "date": "2026-12-14",
+   "title": "Z2 solto: recuperação com cadência variada (41 min)",
+   "where": "rolo",
+   "notes": "Recuperação ativa. Z2 a 135-145 W com cadência mudando de 85 a 100 rpm. Sem nada forte.",
+   "workout": {
+    "name": "Z2 solto: recuperação com cadência variada (41 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Treino leve de recuperação.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 480,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "note": "Cadência um pouco mais alta.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 480,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 145
+      },
+      "note": "Cadência mais baixa, sem forçar.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 480,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 125
+      },
+      "cadence": 85
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-12-15",
+   "title": "Limiar contínuo: 12 min, 30/30 e escada final (48 min)",
+   "where": "rolo",
+   "notes": "Bloco 1: 12 min a 195 W mudando a cadência (85, 95, 90 rpm). Bloco 2: 6x 30 s a 240 W em 100 rpm. Bloco 3: força 3 min a 180 W em 65 rpm. Bloco 4: escada 200/210/215 W (90 s cada).",
+   "workout": {
+    "name": "Limiar contínuo: 12 min, 30/30 e escada final (48 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Hoje é o limiar mais longo do bloco.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 165
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "note": "Só para abrir as pernas.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "note": "Bloco um, limiar contínuo. Começa com cadência mais baixa.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "note": "Solta a cadência.",
+      "cadence": 95
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "note": "Últimos quatro minutos. Segura.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "note": "Bloco dois, trinta por trinta.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 240
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 180
+      },
+      "note": "Bloco três, força curta.",
+      "cadence": 65
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "note": "Falta só o último bloco.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 200
+      },
+      "note": "Bloco quatro, escada final.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 210
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "note": "Último degrau. Fecha!",
+      "cadence": 95
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 125
+      },
+      "cadence": 85
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-12-16",
+   "title": "Descanso",
+   "notes": "Dia livre. Dormir bem também é treino."
+  },
+  {
+   "date": "2026-12-17",
+   "title": "Sweet spot e força: último treino de carga (44 min)",
+   "where": "rolo",
+   "notes": "Último treino de carga, um pouco mais contido. Bloco 1: força 6 min a 172 W em 65 rpm. Bloco 2: sweet spot 8 min a 186 W com 30 s a 220 W no meio. Bloco 3: 4x 40 s a 230 W / 20 s leve. Bloco 4: 3 min a 195 W.",
+   "workout": {
+    "name": "Sweet spot e força: último treino de carga (44 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Último treino de carga antes da descarga.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 165
+      },
+      "cadence": 95
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 215
+      },
+      "note": "Só para abrir as pernas.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 90,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 360,
+      "target": {
+       "type": "watts",
+       "watts": 172
+      },
+      "note": "Bloco um, força. Cadência baixa.",
+      "cadence": 65
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 225,
+      "target": {
+       "type": "watts",
+       "watts": 186
+      },
+      "note": "Bloco dois, sweet spot com um surto no meio.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 220
+      },
+      "note": "Surto curto.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 225,
+      "target": {
+       "type": "watts",
+       "watts": 186
+      },
+      "note": "Volta para o sweet spot.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 40,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "note": "Bloco três, quarenta por vinte.",
+      "cadence": 100
+     },
+     {
+      "durationSec": 20,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 40,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 20,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 40,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 20,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 40,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "cadence": 100
+     },
+     {
+      "durationSec": 20,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "note": "Falta só o último bloco.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 195
+      },
+      "note": "Bloco quatro, fecha o bloco de carga no limiar.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 125
+      },
+      "cadence": 85
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-12-18",
+   "title": "Descanso",
+   "notes": "Dia livre. Dormir bem também é treino."
+  },
+  {
+   "date": "2026-12-19",
+   "title": "Descanso",
+   "notes": "Dia livre. Dormir bem também é treino."
+  },
+  {
+   "date": "2026-12-20",
+   "title": "Descarga: tempo leve com giro (35 min)",
+   "where": "rolo",
+   "notes": "Descarga: volume e intensidade menores. Tempo 6 min a 160 W, força leve 3 min a 155 W em 65 rpm, 4x 30 s a 190 W em 105 rpm. Nada acima de 190 W.",
+   "workout": {
+    "name": "Descarga: tempo leve com giro (35 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Semana de descarga. Treino leve.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 360,
+      "target": {
+       "type": "watts",
+       "watts": 160
+      },
+      "note": "Tempo leve.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 155
+      },
+      "note": "Força leve.",
+      "cadence": 65
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      },
+      "note": "Giro rápido, sem força.",
+      "cadence": 105
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      },
+      "cadence": 105
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      },
+      "cadence": 105
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 190
+      },
+      "cadence": 105
+     },
+     {
+      "durationSec": 30,
+      "target": {
+       "type": "watts",
+       "watts": 140
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 125
+      },
+      "cadence": 85
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-12-21",
+   "title": "Descanso",
+   "notes": "Dia livre. Dormir bem também é treino."
+  },
+  {
+   "date": "2026-12-22",
+   "title": "Abertura pré-teste: estímulos curtos (28 min)",
+   "where": "rolo",
+   "notes": "Véspera do teste. Curto, só para acordar as pernas: 3 min a 185 W, 1 min a 205 W, 3x 15 s fortes. Depois descansa e come bem.",
+   "workout": {
+    "name": "Abertura pré-teste: estímulos curtos (28 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Véspera do teste. Curto e leve, só para acordar as pernas.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 185
+      },
+      "note": "Três minutos perto do limiar.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 205
+      },
+      "note": "Um minuto no ritmo do teste.",
+      "cadence": 95
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 15,
+      "target": {
+       "type": "watts",
+       "watts": 260
+      },
+      "note": "Tiro curto.",
+      "cadence": 105
+     },
+     {
+      "durationSec": 105,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 15,
+      "target": {
+       "type": "watts",
+       "watts": 260
+      },
+      "cadence": 105
+     },
+     {
+      "durationSec": 105,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 15,
+      "target": {
+       "type": "watts",
+       "watts": 260
+      },
+      "note": "Último.",
+      "cadence": 105
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
+     }
+    ]
+   }
+  },
+  {
+   "date": "2026-12-23",
+   "title": "Teste de FTP 20 min",
+   "where": "rolo",
+   "notes": "Teste de FTP guiado, ~57 min, depois de 3 semanas de carga e a descarga. Comece com ERG ligado: o app segura a carga no aquecimento e solta o rolo nos 20 min do teste (use as marchas). Ritmo: 5 min a 200 W, 10 min a 210 W (se sobrar, sobe para 215-220), 5 min finais com tudo. No fim o app calcula o FTP (95% da média dos 20 min) e oferece atualizar o perfil. Depois exporte o treino no Histórico e me mande o CSV.",
+   "workout": {
+    "name": "Teste de FTP 20 min",
+    "blocks": [
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "note": "Teste de FTP. Começa o aquecimento, pedal leve, cadência solta."
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "note": "Tiro 1 de 3. Forte, cadência alta."
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "note": "Tiro 2 de 3."
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      }
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 230
+      },
+      "note": "Último tiro."
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      }
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 210
+      },
+      "note": "5 minutos bem forte, para gastar o fôlego curto antes do teste."
+     },
+     {
+      "durationSec": 600,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "note": "10 minutos leves. Respira, bebe água e se prepara."
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 200
+      },
+      "erg": false,
+      "ftpTest": true,
+      "note": "Começou o teste de 20 minutos. O rolo está solto, use as marchas. Sai comedido, uns 200 watts. Passar do alvo está liberado."
+     },
+     {
+      "durationSec": 600,
+      "target": {
+       "type": "watts",
+       "watts": 210
+      },
+      "erg": false,
+      "ftpTest": true,
+      "note": "Agora segura uns 210. Se estiver sobrando, pode ir subindo para 215, 220."
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "free"
+      },
+      "erg": false,
+      "ftpTest": true,
+      "note": "Últimos 5 minutos. Vai com tudo, esvazia o tanque!"
+     },
+     {
+      "durationSec": 600,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Acabou! 10 minutos soltando as pernas."
      }
     ]
    }
