@@ -17,37 +17,33 @@ class SceneTrackTest {
         )
     )
 
-    @Test fun strongBlockIsClimbRecoveryIsDescent() {
+    @Test fun blocksAndZones() {
         val t = SceneTrack.of(plan, 210)
-        assertTrue(t.gradeAt(500.0) > 5.0)          // 205 W com FTP 210: subida
-        assertTrue(t.gradeAt(870.0) < 0.0)          // 110 W: descida leve
         assertEquals(1, t.blockAt(400.0))
         assertEquals(4, t.zones[1])
         assertEquals(960, t.totalSec)
+        assertEquals(215, SceneTrack.of(plan, 210, offsetW = 10).watts[1])
     }
 
-    @Test fun gradeChangesSmoothlyAtBlockStart() {
-        val t = SceneTrack.of(plan, 210)
-        val before = t.gradeAt(299.9); val after = t.gradeAt(300.1)
-        assertTrue(kotlin.math.abs(after - before) < 0.5)
+    @Test fun easyIsUprightHardIsAttack() {
+        assertEquals(0f, SceneTrack.postureFor(110f, 200), 1e-6f)   // Z1
+        assertEquals(0f, SceneTrack.postureFor(130f, 200), 1e-6f)   // fim da Z2
+        assertEquals(1f, SceneTrack.postureFor(260f, 200), 1e-6f)   // Z6
+        assertEquals(1f, SceneTrack.postureFor(600f, 200), 1e-6f)
+        assertEquals(0f, SceneTrack.postureFor(0f, 200), 1e-6f)
+        assertEquals(0f, SceneTrack.postureFor(200f, 0), 1e-6f)
     }
 
-    @Test fun elevationRisesOnClimbAndStaysFlatAfterEnd() {
-        val t = SceneTrack.of(plan, 210)
-        assertTrue(t.elevation(700.0) > t.elevation(400.0))
-        assertEquals(t.elevation(960.0), t.elevation(2000.0), 1e-9)
-    }
-
-    @Test fun offsetMakesClimbSteeper() {
-        val base = SceneTrack.of(plan, 210).gradeAt(500.0)
-        val harder = SceneTrack.of(plan, 210, offsetW = 20).gradeAt(500.0)
-        assertTrue(harder > base)
-    }
-
-    @Test fun freeRideRollsGently() {
-        val t = SceneTrack.of(null, 210)
-        val g = (0..600).map { t.gradeAt(it.toDouble()) }
-        assertTrue(g.max() < 5.0 && g.min() > -5.0)
-        assertTrue(g.max() > 1.0)
+    @Test fun postureGrowsWithZone() {
+        val z3 = SceneTrack.postureFor(165f, 200)
+        val z4 = SceneTrack.postureFor(200f, 200)
+        val z5 = SceneTrack.postureFor(230f, 200)
+        assertTrue(z3 > 0f && z3 < z4 && z4 < z5 && z5 < 1f)
+        var last = -1f
+        for (w in 0..400) {
+            val p = SceneTrack.postureFor(w.toFloat(), 200)
+            assertTrue(p >= last)
+            last = p
+        }
     }
 }

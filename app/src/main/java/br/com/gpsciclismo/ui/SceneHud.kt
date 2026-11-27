@@ -129,17 +129,14 @@ private fun PillBtn(
     }
 }
 
-/** No celular em pé: a cena num quadro no topo da tela, com a subida e o tempo do bloco. */
+/** No celular em pé: a cena num quadro no topo da tela, com o tempo que falta do bloco. */
 @Composable
 fun SceneBanner(live: LiveRide, track: SceneTrack, modifier: Modifier = Modifier) {
     BoxWithConstraints(modifier.clip(RoundedCornerShape(16.dp))) {
         val u = maxWidth / 100f
         val density = LocalDensity.current
         RideScene(live, track, Modifier.fillMaxSize())
-        Row(Modifier.fillMaxWidth().padding(10.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-            val g = track.gradeAt(live.elapsedSec.toDouble())
-            Glass(u) { Text(gradeText(g), color = Ink, fontFamily = Condensed, fontWeight = FontWeight.Bold,
-                fontSize = with(density) { (u * 4.5f).toSp() }) }
+        Row(Modifier.fillMaxWidth().padding(10.dp), horizontalArrangement = Arrangement.End) {
             live.coach?.takeIf { it.status != PowerCoach.Status.FINISHED && live.workout != null }?.let { c ->
                 Glass(u) { Text("faltam ${fmtClock(c.blockRemainingSec)}", color = Ink, fontFamily = Condensed,
                     fontWeight = FontWeight.Bold, fontSize = with(density) { (u * 4.5f).toSp() }) }
@@ -264,7 +261,6 @@ private fun StatsCard(live: LiveRide, track: SceneTrack, u: Dp, ts: (Float) -> T
         if (coach?.ftpTest == true && live.testAvgPower != null) add(Triple("Média teste", "${live.testAvgPower}", "W"))
         add(Triple("Cadência", fmtOpt(live.cadence), "rpm"))
         add(Triple("FC", fmtOpt(live.heartRate), "bpm"))
-        add(Triple("Subida", gradeText(track.gradeAt(live.elapsedSec.toDouble())), ""))
         val total = live.workout?.totalSec
         if (total != null) add(Triple("Fim em", fmtClock((total - live.elapsedSec).coerceAtLeast(0)), ""))
         else add(Triple("Distância", fmtKm(live.distanceM), "km"))
@@ -326,9 +322,6 @@ private fun nextLabel(track: SceneTrack, i: Int): String {
         else -> "$w W"
     }
 }
-
-private fun gradeText(g: Double): String =
-    (if (g >= 0) "▲ " else "▼ ") + String.format(Locale("pt", "BR"), "%.1f%%", kotlin.math.abs(g))
 
 /** m:ss (ou h:mm:ss), como no relógio da prévia. */
 private fun fmtClock(sec: Int): String {
