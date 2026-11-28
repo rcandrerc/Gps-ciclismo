@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.runtime.saveable.rememberSaveable
 import br.com.gpsciclismo.core.SceneTrack
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.FilledTonalButton
 import br.com.gpsciclismo.recording.LiveRide
@@ -23,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.PedalBike
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RecordVoiceOver
@@ -154,7 +156,12 @@ private fun CountdownOverlay(n: Int) {
 @Composable
 private fun RideHeader(app: GpsCiclismoApp, live: LiveRide, sceneOn: Boolean, onToggleScene: () -> Unit) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        TextButton(onClick = onToggleScene) { Text(if (sceneOn) "Esconder cena" else "Ver cena") }
+        // Botão bem visível: é por ele que se volta para a cena com o ciclista.
+        if (sceneOn) TextButton(onClick = onToggleScene) { Text("Esconder cena") }
+        else FilledTonalButton(onClick = onToggleScene, modifier = Modifier.padding(end = 8.dp)) {
+            Icon(Icons.Filled.PedalBike, null, Modifier.size(20.dp))
+            Text("  Voltar para a cena")
+        }
         Text(
             live.workout?.name ?: "Pedal livre",
             style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f),
@@ -271,6 +278,14 @@ private fun PowerPanel(live: LiveRide, numberSize: Int) {
                 },
                 color = if (shown == PowerCoach.Status.NO_TARGET) MaterialTheme.colorScheme.onSurfaceVariant else color,
             )
+            coach.cadence?.let { goal ->
+                val cs = PowerCoach.compareCadence(live.cadence, goal)
+                Text(
+                    "Cadência ${fmtOpt(live.cadence)} rpm · alvo $goal",
+                    style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold,
+                    color = if (cs == PowerCoach.Status.NO_TARGET) MaterialTheme.colorScheme.onSurfaceVariant else powerStatusColor(cs),
+                )
+            }
             if (coach.ftpTest) live.testAvgPower?.let { avg ->
                 Text(
                     "Média do teste $avg W · FTP ≈ ${FtpTestTracker.ftpFrom(avg)} W",

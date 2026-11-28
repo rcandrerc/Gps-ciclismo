@@ -83,7 +83,14 @@ private fun valueOf(f: LiveField, live: LiveRide, profile: Profile): FieldValue 
     }
     LiveField.HEART_RATE -> FieldValue(fmtOpt(live.heartRate), "bpm", Color(0xFFFF6B6B))
     LiveField.AVG_HR -> FieldValue(if (live.avgHr > 0) live.avgHr.toString() else "--", "bpm")
-    LiveField.CADENCE -> FieldValue(fmtOpt(live.cadence), "rpm")
+    LiveField.CADENCE -> {
+        // Com alvo no bloco: "CADÊNCIA · ALVO 90" em cima e o número verde/cinza/vermelho.
+        val goal = live.coach?.takeIf { it.status != PowerCoach.Status.FINISHED }?.cadence
+        FieldValue(
+            fmtOpt(live.cadence), "rpm", powerStatusColor(PowerCoach.compareCadence(live.cadence, goal)),
+            label = goal?.let { "Cadência · alvo $it" }, status = goal != null,
+        )
+    }
     LiveField.KCAL -> FieldValue(live.kcal.toString(), "kcal")
     }
 }
