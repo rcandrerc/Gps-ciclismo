@@ -21,7 +21,13 @@ enum class DayStatus {
 }
 
 /** Resumo do que o atleta fez de um dia: tempo pedalado e aproveitamento (null sem blocos). */
-data class DoneRide(val sec: Int, val adherencePct: Int?, val workoutName: String? = null)
+data class DoneRide(
+    val sec: Int,
+    val adherencePct: Int?,
+    val workoutName: String? = null,
+    /** Dia do plano escolhido pelo atleta, ou null para automático. */
+    val planDate: LocalDate? = null,
+)
 
 /** Taxa de conclusão dos treinos planejados num período. */
 data class ComplianceSummary(
@@ -61,12 +67,24 @@ object PlanCompliance {
         calendar: TrainingCalendar?,
         byDay: Map<LocalDate, List<T>>,
         workoutName: (T) -> String?,
+        planDate: (T) -> LocalDate? = { null },
     ): Map<LocalDate, List<T>> {
-        if (calendar == null) return byDay
         val out = byDay.mapValues { it.value.toMutableList() }.toMutableMap()
+        // 1) Dia escolhido à mão pelo atleta sempre vale.
+        val manual = HashSet<T>()
+        for ((date, list) in byDay) for (ride in list) {
+            val chosen = planDate(ride) ?: continue
+            manual += ride
+            if (chosen == date) continue
+            out.getValue(date).remove(ride)
+            out.getOrPut(chosen) { mutableListOf() }.add(ride)
+        }
+        if (calendar == null) return out.filterValues { it.isNotEmpty() }
+        // 2) Automático: treino com o nome de outro dia planejado vai para aquele dia.
         fun planName(d: LocalDate) = calendar.day(d)?.workout?.name
         for (date in byDay.keys.sorted()) {
             for (ride in byDay[date].orEmpty()) {
+                if (ride in manual) continue
                 val name = workoutName(ride)?.takeIf { it.isNotBlank() } ?: continue
                 if (planName(date) == name) continue // feito no dia certo
                 // Dia planejado com o mesmo treino e ainda sem pedal; o mais perto ganha.
@@ -107,7 +125,7 @@ object PlanCompliance {
         days: Int = 30,
     ): ComplianceSummary {
         var planned = 0; var done = 0; var partial = 0; var missed = 0
-        val assigned = assign(calendar, ridesByDay) { it.workoutName }
+        val assigned = assign(calendar, ridesByDay, { it.workoutName }, { it.planDate })
         if (calendar != null) {
             for (i in 0 until days) {
                 val date = today.minusDays(i.toLong())

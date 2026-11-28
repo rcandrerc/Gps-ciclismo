@@ -49,6 +49,11 @@ data class RideEntity(
     val testSec: Int? = null,
     /** Quando foi enviado para a nuvem (null = ainda não subiu). */
     val syncedAt: Long? = null,
+    /**
+     * Dia do plano (AAAA-MM-DD) para o qual este treino conta, escolhido pelo atleta
+     * (ex.: treino de 25 feito em 26). Null = automático.
+     */
+    val planDate: String? = null,
 )
 
 @Entity(
@@ -127,6 +132,8 @@ interface WeightDao {
     suspend fun clearSynced()
 }
 
+data class RidePlanDate(val uuid: String, val planDate: String?)
+
 @Dao
 interface RideDao {
     @Insert suspend fun insertRide(ride: RideEntity): Long
@@ -155,6 +162,17 @@ interface RideDao {
     @Query("UPDATE RideEntity SET syncedAt = :at WHERE id = :id")
     suspend fun markSynced(id: Long, at: Long)
 
+    /** Muda o dia do plano do treino; sobe de novo para a nuvem. */
+    @Query("UPDATE RideEntity SET planDate = :planDate, syncedAt = NULL WHERE id = :id")
+    suspend fun setPlanDate(id: Long, planDate: String?)
+
+    /** Mudança de dia que veio de outro aparelho (já está na nuvem). */
+    @Query("UPDATE RideEntity SET planDate = :planDate WHERE uuid = :uuid AND syncedAt IS NOT NULL")
+    suspend fun applyRemotePlanDate(uuid: String, planDate: String?)
+
+    @Query("SELECT uuid, planDate FROM RideEntity")
+    suspend fun planDates(): List<RidePlanDate>
+
     /** Outra conta entrou neste aparelho: os treinos daqui sobem de novo para ela. */
     @Query("UPDATE RideEntity SET syncedAt = NULL")
     suspend fun clearSynced()
@@ -179,7 +197,7 @@ interface WorkoutDao {
 
 @Database(
     entities = [RideEntity::class, RidePointEntity::class, WorkoutEntity::class, WeightEntity::class],
-    version = 5,
+    version = 6,
     exportSchema = true,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -190,7 +208,7 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         fun create(context: Context): AppDatabase =
             Room.databaseBuilder(context, AppDatabase::class.java, "gps-ciclismo.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                 .build()
 
         /** Versão 2: nota/aproveitamento do treino. Mantém o histórico. */
@@ -215,6 +233,13 @@ abstract class AppDatabase : RoomDatabase() {
         val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE RideEntity ADD COLUMN syncedAt INTEGER")
+            }
+        }
+
+        /** Versão 6: dia do plano escolhido pelo atleta para o treino. */
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE RideEntity ADD COLUMN planDate TEXT")
             }
         }
 

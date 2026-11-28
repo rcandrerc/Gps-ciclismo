@@ -261,11 +261,18 @@ class CloudSync(private val context: Context, private val db: AppDatabase, priva
         val localUuids = db.rides().uuids().toHashSet()
         localUuids += sp.getStringSet("pendingDeletes", emptySet())!! // apagado aqui durante a sincronização
         var received = 0
+        val localPlanDates = db.rides().planDates().associate { it.uuid to it.planDate }
         for (doc in remote) {
             val f = CloudCodec.fieldsOf(doc)
             val ride = CloudCodec.rideFrom(f, System.currentTimeMillis()) ?: continue
             remoteUuids += ride.uuid
-            if (ride.uuid in localUuids) continue
+            if (ride.uuid in localUuids) {
+                // Dia do plano mudado no outro aparelho (aqui só vale se não houver mudança local pendente).
+                if (ride.uuid in localPlanDates && localPlanDates[ride.uuid] != ride.planDate) {
+                    db.rides().applyRemotePlanDate(ride.uuid, ride.planDate)
+                }
+                continue
+            }
             val nChunks = f.getInt("pointChunks") ?: 0
             val points = listDocs("$userPath/rides/${ride.uuid}/points")
                 .map { CloudCodec.fieldsOf(it) }

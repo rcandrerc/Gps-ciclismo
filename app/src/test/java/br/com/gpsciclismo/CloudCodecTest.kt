@@ -26,7 +26,7 @@ class CloudCodecTest {
             workoutName = "Sweet spot 3x8", distanceM = 18_234.5, movingSec = 2300, elapsedSec = 2400,
             avgSpeedKmh = 27.4, maxSpeedKmh = 41.2, avgPower = 182, maxPower = 410, avgHr = 141, maxHr = 172,
             avgCadence = 88, kcal = 430, adherencePct = 87, planJson = """{"name":"x"}""", ftpUsed = 210,
-            testAvgPower = null, testSec = null,
+            testAvgPower = null, testSec = null, planDate = "2026-11-25",
         )
         val back = CloudCodec.rideFrom(roundTrip(CloudCodec.rideFields(ride, 2400, 1)), syncedAt = 99)!!
         assertEquals(ride.copy(id = 0, syncedAt = 99), back)
