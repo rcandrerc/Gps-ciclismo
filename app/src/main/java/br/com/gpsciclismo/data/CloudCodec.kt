@@ -78,6 +78,7 @@ object CloudCodec {
         "ftpUsed" to int(r.ftpUsed),
         "testAvgPower" to int(r.testAvgPower),
         "testSec" to int(r.testSec),
+        "planDate" to str(r.planDate),
         "pointCount" to int(pointCount),
         "pointChunks" to int(chunks),
     )
@@ -108,6 +109,7 @@ object CloudCodec {
             testAvgPower = f.getInt("testAvgPower"),
             testSec = f.getInt("testSec"),
             syncedAt = syncedAt,
+            planDate = f.getStr("planDate"),
         )
     }
 

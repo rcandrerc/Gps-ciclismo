@@ -68,6 +68,8 @@ import br.com.gpsciclismo.core.DayStatus
 import br.com.gpsciclismo.core.DoneRide
 import br.com.gpsciclismo.core.PlanCompliance
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.CardDefaults
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -109,7 +111,20 @@ fun CalendarScreen(app: GpsCiclismoApp, nav: NavController) {
         PlanCompliance.assign(
             calendar,
             rides.groupBy { Instant.ofEpochMilli(it.startedAt).atZone(ZoneId.systemDefault()).toLocalDate() },
-        ) { it.workoutName }
+            { it.workoutName }, { it.planLocalDate() },
+        )
+    }
+    // Treino escolhido para mudar o dia do plano (diálogo).
+    var moving by remember { mutableStateOf<RideEntity?>(null) }
+    moving?.let { r ->
+        ChangeDayDialog(r, calendar, onDismiss = { moving = null }) { newDate ->
+            moving = null
+            scope.launch {
+                app.db.rides().setPlanDate(r.id, newDate?.toString())
+                app.cloud.requestSync()
+                newDate?.let { selected = it; month = YearMonth.from(it) }
+            }
+        }
     }
     val doneByDay = remember(ridesByDay) { ridesByDay.mapValues { (_, l) -> l.map { it.toDoneRide() } } }
     val statusOf: (LocalDate) -> DayStatus = { date ->
@@ -150,7 +165,7 @@ fun CalendarScreen(app: GpsCiclismoApp, nav: NavController) {
             }
             val detail: @Composable () -> Unit = {
                 DayDetail(selected, calendar?.day(selected), statusOf(selected), ridesByDay[selected].orEmpty(), profile.ftp,
-                    onOpenRide = { nav.navigate("ride/$it") }) { plan -> start(plan) }
+                    onOpenRide = { nav.navigate("ride/$it") }, onChangeDay = { moving = it }) { plan -> start(plan) }
             }
             if (sideBySide) {
                 // Altura da célula calculada para o mês inteiro (até 6 semanas) caber sem rolar.
@@ -309,6 +324,7 @@ private fun DayDetail(
     done: List<RideEntity>,
     ftp: Int,
     onOpenRide: (Long) -> Unit,
+    onChangeDay: (RideEntity) -> Unit,
     onStart: (WorkoutPlan) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -317,14 +333,14 @@ private fun DayDetail(
             DayStatus.MISSED -> StatusNote(Icons.Filled.Cancel, Red, "Este treino não foi feito.")
             else -> {}
         }
-        done.forEach { r -> DoneRideCard(r, date) { onOpenRide(r.id) } }
+        done.forEach { r -> DoneRideCard(r, date, onChangeDay = { onChangeDay(r) }) { onOpenRide(r.id) } }
         PlanCard(date, day, done.isNotEmpty(), ftp, onStart)
     }
 }
 
 /** Treino já feito neste dia: resumo e toque para ver tudo (mapa, gráficos, blocos). */
 @Composable
-private fun DoneRideCard(r: RideEntity, planned: LocalDate, onClick: () -> Unit) {
+private fun DoneRideCard(r: RideEntity, planned: LocalDate, onChangeDay: () -> Unit, onClick: () -> Unit) {
     Card(onClick = onClick, colors = CardDefaults.cardColors(containerColor = Green.copy(alpha = 0.12f))) {
         Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -350,7 +366,11 @@ private fun DoneRideCard(r: RideEntity, planned: LocalDate, onClick: () -> Unit)
                 },
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text("Toque para ver os detalhes", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Toque para ver os detalhes", Modifier.weight(1f),
+                    style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                TextButton(onClick = onChangeDay) { Text("Mudar o dia") }
+            }
         }
     }
 }
@@ -418,4 +438,45 @@ private fun StatusNote(icon: androidx.compose.ui.graphics.vector.ImageVector, co
 }
 
 /** Resumo do pedal para a conta de concluído/parcial. */
-fun RideEntity.toDoneRide(): DoneRide = DoneRide(maxOf(elapsedSec, movingSec), adherencePct, workoutName)
+fun RideEntity.toDoneRide(): DoneRide = DoneRide(maxOf(elapsedSec, movingSec), adherencePct, workoutName, planLocalDate())
+
+fun RideEntity.planLocalDate(): LocalDate? = planDate?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+
+/**
+ * Escolher para qual dia do plano o treino conta (ex.: treino de 25 feito em 26).
+ * Mostra os dias com treino até 7 dias antes ou depois, o próprio dia do pedal e "automático".
+ */
+@Composable
+private fun ChangeDayDialog(r: RideEntity, calendar: TrainingCalendar?, onDismiss: () -> Unit, onPick: (LocalDate?) -> Unit) {
+    val rideDay = Instant.ofEpochMilli(r.startedAt).atZone(ZoneId.systemDefault()).toLocalDate()
+    val options = remember(r, calendar) {
+        (-7L..7L).map { rideDay.plusDays(it) }
+            .filter { it == rideDay || calendar?.day(it)?.workout != null }
+    }
+    val current = r.planLocalDate()
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Contar este treino para qual dia?") },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("Pedalado em ${dayShort.format(rideDay)}. O treino continua salvo com a data real; muda só o dia do plano em que ele conta.",
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                TextButton(onClick = { onPick(null) }, modifier = Modifier.fillMaxWidth()) {
+                    Text((if (current == null) "✓ " else "") + "Automático (o app escolhe)", Modifier.fillMaxWidth())
+                }
+                options.forEach { d ->
+                    val label = buildString {
+                        if (current == d) append("✓ ")
+                        append(d.format(dayTitle).replaceFirstChar { it.titlecase(ptBR) })
+                        val plan = calendar?.day(d)?.workout
+                        if (plan != null) append(": ${plan.name}") else append(" (dia do pedal)")
+                    }
+                    TextButton(onClick = { onPick(d) }, modifier = Modifier.fillMaxWidth()) {
+                        Text(label, Modifier.fillMaxWidth(), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
+    )
+}
