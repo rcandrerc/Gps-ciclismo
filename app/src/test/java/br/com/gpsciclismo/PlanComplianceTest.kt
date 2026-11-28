@@ -63,7 +63,7 @@ class PlanComplianceTest {
     @Test fun lateWorkoutCountsForPlannedDay() {
         // Treino "B" de 22 feito no dia 23 (um dia depois): conta para o dia 22, não é furo.
         val rides = mapOf(d(23) to listOf(DoneRide(1000, 80, "B")))
-        val assigned = PlanCompliance.assign(cal, rides) { it.workoutName }
+        val assigned = PlanCompliance.assign(cal, rides, { it.workoutName })
         assertEquals(listOf(DoneRide(1000, 80, "B")), assigned[d(22)])
         assertNull(assigned[d(23)])
         val s = PlanCompliance.summary(cal, rides, today)
@@ -74,7 +74,7 @@ class PlanComplianceTest {
     @Test fun rideOnItsOwnDayIsNotMoved() {
         // "C" feito no dia certo e outro "C" no dia 25: o do dia 25 não rouba nada.
         val rides = mapOf(d(24) to listOf(DoneRide(1000, 80, "C")), d(25) to listOf(DoneRide(1000, 80, "C")))
-        val assigned = PlanCompliance.assign(cal, rides) { it.workoutName }
+        val assigned = PlanCompliance.assign(cal, rides, { it.workoutName })
         assertEquals(1, assigned[d(24)]!!.size)
         assertEquals(1, assigned[d(25)]!!.size)
     }
