@@ -1,6 +1,6 @@
 {
  "name": "Bloco até o teste de FTP (28/11 a 23/12)",
- "updated": "2026-11-27",
+ "updated": "2026-11-28",
  "days": [
   {
    "date": "2026-11-25",
@@ -666,11 +666,6 @@
   },
   {
    "date": "2026-11-30",
-   "title": "Descanso",
-   "notes": "Dia livre. Dormir bem também é treino."
-  },
-  {
-   "date": "2026-12-01",
    "title": "Limiar dinâmico: over-under, pirâmide e final forte (44 min)",
    "where": "rolo",
    "notes": "Bloco 1: over-under 2x (2 min a 185 W + 1 min a 205 W). Bloco 2: pirâmide 180/195/205/195 W (90 s cada). Bloco 3: 5x 30 s a 230 W em 100 rpm. Bloco 4: 3 min a 190 W + 30 s a 230 W. Limiar em 85-95 rpm.",
@@ -932,15 +927,15 @@
    }
   },
   {
-   "date": "2026-12-02",
+   "date": "2026-12-01",
    "title": "Descanso",
    "notes": "Dia livre. Dormir bem também é treino."
   },
   {
-   "date": "2026-12-03",
+   "date": "2026-12-02",
    "title": "Tempo e força: Z3 em cadências diferentes (44 min)",
    "where": "rolo",
-   "notes": "Treino médio para fechar a semana. Bloco 1: tempo 8 min a 165 W. Bloco 2: força 5 min a 165 W em 65 rpm. Bloco 3: cadência em escada 85/95/105 rpm a 170 W. Bloco 4: 4 min a 180 W. Nada acima de 190 W.",
+   "notes": "Treino médio no meio da semana. Bloco 1: tempo 8 min a 165 W. Bloco 2: força 5 min a 165 W em 65 rpm. Bloco 3: cadência em escada 85/95/105 rpm a 170 W. Bloco 4: 4 min a 180 W. Nada acima de 190 W.",
    "workout": {
     "name": "Tempo e força: Z3 em cadências diferentes (44 min)",
     "blocks": [
@@ -1083,9 +1078,165 @@
    }
   },
   {
-   "date": "2026-12-04",
+   "date": "2026-12-03",
    "title": "Descanso",
    "notes": "Dia livre. Dormir bem também é treino."
+  },
+  {
+   "date": "2026-12-04",
+   "title": "Tempo leve dinâmico: giro, ritmo e força (40 min)",
+   "where": "rolo",
+   "notes": "Quarto treino da semana, leve para chegar inteiro no sábado. Bloco 1: tempo 5 min a 160 W. Bloco 2: giro 3x 1 min em 105 rpm a 150 W. Bloco 3: força leve 4 min a 155 W em 65 rpm. Bloco 4: progressivo 150/160/170 W (2 min cada). Nada acima de 175 W.",
+   "workout": {
+    "name": "Tempo leve dinâmico: giro, ritmo e força (40 min)",
+    "blocks": [
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "note": "Quarto treino da semana. Leve e variado, para guardar perna para sábado.",
+      "cadence": 85
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 300,
+      "target": {
+       "type": "watts",
+       "watts": 160
+      },
+      "note": "Bloco um, tempo leve. Respiração tranquila.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 150
+      },
+      "note": "Bloco dois, giro rápido, sem força.",
+      "cadence": 105
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 150
+      },
+      "note": "Giro de novo.",
+      "cadence": 105
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 135
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 60,
+      "target": {
+       "type": "watts",
+       "watts": 150
+      },
+      "note": "Último giro.",
+      "cadence": 105
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 240,
+      "target": {
+       "type": "watts",
+       "watts": 155
+      },
+      "note": "Bloco três, força leve. Cadência baixa, sem apertar.",
+      "cadence": 65
+     },
+     {
+      "durationSec": 150,
+      "target": {
+       "type": "watts",
+       "watts": 130
+      },
+      "note": "Falta só o último bloco.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 150
+      },
+      "note": "Bloco quatro, progressivo. Sobe um pouco a cada dois minutos.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 160
+      },
+      "cadence": 90
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "watts",
+       "watts": 170
+      },
+      "note": "Último degrau, fecha bem.",
+      "cadence": 90
+     },
+     {
+      "durationSec": 180,
+      "target": {
+       "type": "watts",
+       "watts": 125
+      },
+      "cadence": 85
+     },
+     {
+      "durationSec": 120,
+      "target": {
+       "type": "zone",
+       "zone": 1
+      },
+      "cadence": 85
+     }
+    ]
+   }
   },
   {
    "date": "2026-12-05",
