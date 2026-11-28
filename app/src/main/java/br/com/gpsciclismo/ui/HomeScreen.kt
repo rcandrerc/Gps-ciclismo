@@ -152,7 +152,7 @@ private fun StartRideDialog(app: GpsCiclismoApp, plan: WorkoutPlan?, onDismiss: 
                     val note = when {
                         erg && sensors[SensorKind.TRAINER] == null -> "Escolha o rolo em Sensores (\"Usar p/ Rolo smart\") para o ERG funcionar."
                         erg && plan == null -> "No pedal livre o ERG não muda a carga. Use um treino por zonas."
-                        else -> "Sem GPS: velocidade e distância vêm do rolo."
+                        else -> "Sem GPS: velocidade e distância calculadas pela potência (estrada plana)."
                     }
                     Text(note, style = MaterialTheme.typography.bodySmall,
                         color = if (note.startsWith("Sem GPS")) MaterialTheme.colorScheme.onSurfaceVariant else Amber)

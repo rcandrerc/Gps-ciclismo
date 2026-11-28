@@ -11,6 +11,7 @@ import br.com.gpsciclismo.ble.BleSensorManager
 import br.com.gpsciclismo.core.CogganZones
 import br.com.gpsciclismo.core.FtpTestTracker
 import br.com.gpsciclismo.core.PowerCoach
+import br.com.gpsciclismo.core.VirtualSpeed
 import br.com.gpsciclismo.core.RideStats
 import br.com.gpsciclismo.core.RollingAverage
 import br.com.gpsciclismo.core.WorkoutPlan
@@ -350,8 +351,11 @@ class RideRecorder(
         _live.value = _live.value.copy(gpsAccuracyM = loc.accuracy)
     }
 
-    private fun currentSpeed(now: Long): Double? {
-        if (setup.indoor) return sensors.readings.value.trainerSpeedNow(now)
+    private fun currentSpeed(now: Long, power: Int?): Double? {
+        // Indoor: velocidade pela potência (estrada plana). A do rolo muda com a marcha
+        // e no ERG chega a 45-50 km/h com 200 W. Sem potência, usa a do rolo.
+        if (setup.indoor) return power?.let { VirtualSpeed.kmh(it, prefs.profile.value.weightKg.toDouble()) }
+            ?: sensors.readings.value.trainerSpeedNow(now)
         val l = lastLocation ?: return null
         if (now - l.time > 4000 || !l.hasSpeed()) return 0.0
         return l.speed * 3.6
@@ -374,7 +378,7 @@ class RideRecorder(
             return
         }
         val elapsed = cur.elapsedSec + 1
-        val speed = currentSpeed(now)
+        val speed = currentSpeed(now, avgShown ?: pw)
         val hr = r.heartRateNow(now)
         val cad = r.cadenceNow(now)
         stats.tickSecond(speed, pw, hr, cad)
