@@ -47,6 +47,8 @@ class PowerCoach(
         val offsetW: Int = 0,
         /** Watts para o ERG neste bloco (com o ajuste), ou null em bloco livre. */
         val ergWatts: Int? = null,
+        /** Cadência alvo do bloco (rpm), ou null em bloco livre. */
+        val cadence: Int? = null,
     )
 
     private var currentBlock = -1
@@ -236,7 +238,8 @@ class PowerCoach(
         val status = compare(power, range)
         val target = shifted(block.target)
         val erg = target.ergWatts(settings.ftp)?.let { if (block.target is PowerTarget.Zone) it + offsetW else it }?.coerceAtLeast(0)
-        state = State(index, remaining, target, range, status, block.ftpTest, block.erg, offsetW, erg)
+        state = State(index, remaining, target, range, status, block.ftpTest, block.erg, offsetW, erg,
+            cadence = if (block.target !is PowerTarget.Free) cadenceOf(block) else null)
 
         val quietEnd = remaining <= warnAt
         if (range != null && power != null && blockElapsed >= settings.graceSec && !quietEnd) {
@@ -354,6 +357,13 @@ class PowerCoach(
             power > range.last -> Status.ABOVE
             else -> Status.IN_ZONE
         }
+
+        /** Folga da cadência alvo para contar como "na faixa" (rpm para cada lado). */
+        const val CADENCE_TOLERANCE = 5
+
+        /** Cadência contra o alvo do bloco: verde na faixa (alvo ±5), cinza abaixo, vermelho acima. */
+        fun compareCadence(cadence: Int?, goal: Int?): Status =
+            compare(cadence, goal?.let { (it - CADENCE_TOLERANCE)..(it + CADENCE_TOLERANCE) })
 
         fun formatDuration(sec: Int): String {
             val m = sec / 60

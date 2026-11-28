@@ -259,7 +259,7 @@ private fun StatsCard(live: LiveRide, track: SceneTrack, u: Dp, ts: (Float) -> T
                 }))
         }
         if (coach?.ftpTest == true && live.testAvgPower != null) add(Triple("Média teste", "${live.testAvgPower}", "W"))
-        add(Triple("Cadência", fmtOpt(live.cadence), "rpm"))
+        add(Triple(coach?.cadence?.let { "Cadência · alvo $it" } ?: "Cadência", fmtOpt(live.cadence), "rpm"))
         add(Triple("FC", fmtOpt(live.heartRate), "bpm"))
         val total = live.workout?.totalSec
         if (total != null) add(Triple("Fim em", fmtClock((total - live.elapsedSec).coerceAtLeast(0)), ""))
@@ -270,7 +270,9 @@ private fun StatsCard(live: LiveRide, track: SceneTrack, u: Dp, ts: (Float) -> T
             rows.forEachIndexed { i, (k, v, unit) ->
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
                     Box(Modifier.weight(1f).padding(bottom = u * 0.5f)) { Label(k, ts) }
-                    Text(v, color = if (i == 0 && coach?.target != null) Jersey2 else Ink, fontFamily = Condensed,
+                    val cadColor = if (k.startsWith("Cadência")) powerStatusColor(PowerCoach.compareCadence(live.cadence, coach?.cadence))
+                        .takeIf { it != Color.Unspecified } else null
+                    Text(v, color = cadColor ?: if (i == 0 && coach?.target != null) Jersey2 else Ink, fontFamily = Condensed,
                         fontWeight = FontWeight.SemiBold, fontSize = ts(2.5f), style = Tabular, maxLines = 1)
                     if (unit.isNotEmpty()) Text(" $unit", color = Muted, fontFamily = Condensed, fontSize = ts(1.4f),
                         maxLines = 1, modifier = Modifier.padding(bottom = u * 0.35f))

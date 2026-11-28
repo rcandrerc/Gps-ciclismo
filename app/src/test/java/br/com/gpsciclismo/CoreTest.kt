@@ -47,6 +47,23 @@ class CoreTest {
         assertEquals(4, CogganZones.zoneFor(200, 200))
     }
 
+    @Test fun coachShowsCadenceTarget() {
+        val plan = WorkoutPlan("cad", listOf(
+            WorkoutBlock(60, PowerTarget.Watts(200), cadence = 95),
+            WorkoutBlock(60, PowerTarget.Watts(150)),
+            WorkoutBlock(60, PowerTarget.Free),
+        ))
+        val coach = PowerCoach(plan, PowerCoach.Settings(ftp = 200))
+        coach.tick(0, 200); assertEquals(95, coach.state.cadence)
+        coach.tick(70, 150); assertEquals(90, coach.state.cadence)   // padrão
+        coach.tick(130, null); assertEquals(null, coach.state.cadence) // livre
+        assertEquals(PowerCoach.Status.IN_ZONE, PowerCoach.compareCadence(91, 95))
+        assertEquals(PowerCoach.Status.BELOW, PowerCoach.compareCadence(85, 95))
+        assertEquals(PowerCoach.Status.ABOVE, PowerCoach.compareCadence(101, 95))
+        assertEquals(PowerCoach.Status.NO_TARGET, PowerCoach.compareCadence(null, 95))
+        assertEquals(PowerCoach.Status.NO_TARGET, PowerCoach.compareCadence(90, null))
+    }
+
     @Test fun coachAnnouncesAndAlerts() {
         val plan = WorkoutPlan("teste", listOf(
             WorkoutBlock(300, PowerTarget.Watts(240)),
