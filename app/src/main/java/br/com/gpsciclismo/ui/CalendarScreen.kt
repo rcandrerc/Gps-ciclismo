@@ -78,6 +78,7 @@ import java.util.Locale
 
 private val ptBR = Locale("pt", "BR")
 private val hourFmt = DateTimeFormatter.ofPattern("HH:mm", ptBR)
+private val dayShort = DateTimeFormatter.ofPattern("dd/MM", ptBR)
 private val dayTitle = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", ptBR)
 
 @Composable
@@ -103,8 +104,12 @@ fun CalendarScreen(app: GpsCiclismoApp, nav: NavController) {
     // Treinos salvos no histórico, agrupados pelo dia em que começaram.
     val ridesFlow = remember { app.db.rides().rides() }
     val rides by ridesFlow.collectAsStateWithLifecycle(emptyList())
-    val ridesByDay = remember(rides) {
-        rides.groupBy { Instant.ofEpochMilli(it.startedAt).atZone(ZoneId.systemDefault()).toLocalDate() }
+    val ridesByDay = remember(rides, calendar) {
+        // Treino feito com atraso (ou adiantado) conta no dia em que estava planejado.
+        PlanCompliance.assign(
+            calendar,
+            rides.groupBy { Instant.ofEpochMilli(it.startedAt).atZone(ZoneId.systemDefault()).toLocalDate() },
+        ) { it.workoutName }
     }
     val doneByDay = remember(ridesByDay) { ridesByDay.mapValues { (_, l) -> l.map { it.toDoneRide() } } }
     val statusOf: (LocalDate) -> DayStatus = { date ->
@@ -312,19 +317,22 @@ private fun DayDetail(
             DayStatus.MISSED -> StatusNote(Icons.Filled.Cancel, Red, "Este treino não foi feito.")
             else -> {}
         }
-        done.forEach { r -> DoneRideCard(r) { onOpenRide(r.id) } }
+        done.forEach { r -> DoneRideCard(r, date) { onOpenRide(r.id) } }
         PlanCard(date, day, done.isNotEmpty(), ftp, onStart)
     }
 }
 
 /** Treino já feito neste dia: resumo e toque para ver tudo (mapa, gráficos, blocos). */
 @Composable
-private fun DoneRideCard(r: RideEntity, onClick: () -> Unit) {
+private fun DoneRideCard(r: RideEntity, planned: LocalDate, onClick: () -> Unit) {
     Card(onClick = onClick, colors = CardDefaults.cardColors(containerColor = Green.copy(alpha = 0.12f))) {
         Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.CheckCircle, null, tint = Green)
-                Text("  Feito às ${hourFmt.format(Instant.ofEpochMilli(r.startedAt).atZone(ZoneId.systemDefault()))}",
+                val at = Instant.ofEpochMilli(r.startedAt).atZone(ZoneId.systemDefault())
+                Text(
+                    if (at.toLocalDate() == planned) "  Feito às ${hourFmt.format(at)}"
+                    else "  Feito em ${dayShort.format(at)} às ${hourFmt.format(at)}",
                     style = MaterialTheme.typography.labelLarge, color = Green)
             }
             Text(r.workoutName ?: "Pedal livre", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
@@ -410,4 +418,4 @@ private fun StatusNote(icon: androidx.compose.ui.graphics.vector.ImageVector, co
 }
 
 /** Resumo do pedal para a conta de concluído/parcial. */
-fun RideEntity.toDoneRide(): DoneRide = DoneRide(maxOf(elapsedSec, movingSec), adherencePct)
+fun RideEntity.toDoneRide(): DoneRide = DoneRide(maxOf(elapsedSec, movingSec), adherencePct, workoutName)
